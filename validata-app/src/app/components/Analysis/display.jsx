@@ -40,7 +40,7 @@ const INFO_DESCRIPTIVE =
   'Descriptive statistics of the AI − goniometer error across participants, after averaging each participant\'s own measurements. Mean shows the average error (bias); SD shows how spread out errors are between participants; SE shows how precisely the mean error is estimated from this sample size.';
 
 // Pure presentational component
-const AnalysisDisplay = ({
+const AnalysisDisplay = React.memo(({
   progressData,
   progressOptions,
   statusData,
@@ -338,6 +338,6 @@ const AnalysisDisplay = ({
       </div>
     </section>
   );
-};
+});
 
 export default AnalysisDisplay;

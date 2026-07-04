@@ -1,3 +1,5 @@
+export const runtime = 'edge';
+
 import { verifySession } from '@/lib/auth-server';
 import mockData from '@/mockData.json';
 import analysisData from './analysisData';

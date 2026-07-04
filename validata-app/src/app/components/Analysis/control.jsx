@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import AnalysisDisplay from './display';
 import AIChatControl from '../AIChat/control';
 import { fetchAnalysisData } from './service';
@@ -48,7 +48,7 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, isDemoM
       });
   }, [localThreshold, isDemoMode]); // Re-fetch if threshold or mode changes
 
-  const progressOptions = {
+  const progressOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -57,15 +57,15 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, isDemoM
     scales: {
       y: { beginAtZero: true, ticks: { stepSize: 1 } },
     },
-  };
+  }), []);
 
-  const statusOptions = {
+  const statusOptions = useMemo(() => ({
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: { position: 'bottom' },
     },
-  };
+  }), []);
 
   const handleRunAnalysis = () => {
     setIsAnalyzing(true);
