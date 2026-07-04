@@ -41,7 +41,6 @@ const BlandAltmanPlot = ({ data }) => {
               ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50' 
               : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50'
           }`}
-          title={isNormal ? "Normal distribution (Parametric limits)" : "Non-normal distribution (Non-parametric limits using median and percentiles)"}
         >
           {isNormal ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
           <span>{isNormal ? 'Normal Distribution' : 'Non-Normal Distribution'}</span>

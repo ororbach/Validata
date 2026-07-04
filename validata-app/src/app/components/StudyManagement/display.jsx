@@ -1,5 +1,4 @@
-import { FlaskConical, Plus, Trash2, CheckCircle2 } from 'lucide-react';
-import HoverTooltip from '../common/HoverTooltip';
+import { FlaskConical, Plus, Trash2, CheckCircle2, HelpCircle } from 'lucide-react';
 
 const StudyManagementDisplay = ({
   studies,
@@ -65,7 +64,16 @@ const StudyManagementDisplay = ({
         {/* Studies List */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-4">
-            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">All Studies</h3>
+            <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+              All Studies
+              <div className="relative group flex items-center">
+                <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-64 p-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] pointer-events-none text-center whitespace-normal font-normal">
+                  Deleting a study permanently removes it and all of its participants and measurements. You cannot delete the only study in the system.
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-800"></div>
+                </div>
+              </div>
+            </h3>
             <span className="text-sm bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 py-1 px-3 rounded-full">
               Total: {studies.length}
             </span>
@@ -94,13 +102,6 @@ const StudyManagementDisplay = ({
                     </span>
                   )}
                 </div>
-                <HoverTooltip
-                  text={
-                    studies.length <= 1
-                      ? 'Cannot delete the only study. Create another study first, then delete this one.'
-                      : 'Permanently deletes this study and all of its participants and measurements. This cannot be undone.'
-                  }
-                >
                   <button
                     onClick={() => onDeleteStudy(s.id)}
                     disabled={studies.length <= 1}
@@ -112,7 +113,6 @@ const StudyManagementDisplay = ({
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
-                </HoverTooltip>
               </div>
             ))}
           </div>

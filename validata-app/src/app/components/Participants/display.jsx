@@ -1,6 +1,4 @@
-import HoverTooltip from '../common/HoverTooltip';
-
-// Pure presentational component
+import { CheckCircle2, XCircle, Search, HelpCircle } from 'lucide-react';
 const ParticipantsDisplay = ({
   participants,
   consent,
@@ -249,7 +247,30 @@ const ParticipantsDisplay = ({
                   <th className="py-3 px-2 font-medium">Consent</th>
                   <th className="py-3 px-2 font-medium">Status</th>
                   <th className="py-3 px-2 font-medium">Enrollment Date</th>
-                  <th className="py-3 px-2 font-medium">Actions</th>
+                  <th className="py-3 px-2 font-medium">
+                    <div className="flex items-center gap-1.5">
+                      Completion
+                      <div className="relative group flex items-center">
+                        <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 p-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] pointer-events-none text-center whitespace-normal font-normal">
+                          Indicates the participant has finished the study.
+                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-800"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th className="py-3 px-2 font-medium">
+                    <div className="flex items-center gap-1.5 justify-end">
+                      Drop
+                      <div className="relative group flex items-center">
+                        <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                        <div className="absolute top-full right-0 mt-2 w-56 p-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] pointer-events-none text-left whitespace-normal font-normal">
+                          Permanently removes the participant and invalidates all their measurements.
+                          <div className="absolute bottom-full right-2 border-4 border-transparent border-b-slate-800"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -284,9 +305,6 @@ const ParticipantsDisplay = ({
                       </td>
                       <td className="py-3 px-2">
                         {normalizedStatus !== 'dropped' && (
-                          // Fixed-width pills so "Mark Complete"/"Mark Not
-                          // Completed" toggling doesn't shift Drop's position.
-                          <div className="flex items-center gap-2">
                             <button
                               onClick={() => onToggleCompleted(p.id)}
                               className={`w-36 text-center text-xs font-semibold px-2.5 py-1.5 rounded-full transition-colors cursor-pointer ${
@@ -295,17 +313,18 @@ const ParticipantsDisplay = ({
                                   : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/70'
                               }`}
                             >
-                              {normalizedStatus === 'completed' ? 'Mark Not Completed' : 'Mark Complete'}
+                              {normalizedStatus === 'completed' ? 'Completed' : 'Not Completed'}
                             </button>
-                            <HoverTooltip text="Permanently removes this participant from active tracking and marks all of their measurements as invalid. This action cannot be undone.">
+                        )}
+                      </td>
+                      <td className="py-3 px-2 text-right">
+                        {normalizedStatus !== 'dropped' && (
                               <button
                                 onClick={() => onDrop(p.id)}
                                 className="w-16 text-center text-xs font-semibold px-2.5 py-1.5 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-600 dark:text-rose-300 hover:bg-rose-200 dark:hover:bg-rose-900/70 transition-colors cursor-pointer"
                               >
                                 Drop
                               </button>
-                            </HoverTooltip>
-                          </div>
                         )}
                       </td>
                     </tr>
@@ -313,7 +332,7 @@ const ParticipantsDisplay = ({
                 })}
                 {participants.length === 0 && (
                   <tr>
-                    <td colSpan="5" className="text-center py-6 text-slate-500 dark:text-slate-400">
+                    <td colSpan="6" className="text-center py-6 text-slate-500 dark:text-slate-400">
                       No participants found.
                     </td>
                   </tr>

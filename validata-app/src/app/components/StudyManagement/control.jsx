@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import StudyManagementDisplay from './display';
+import { validateStudyCreation, validateStudyDeletion } from './service';
 
 const StudyManagementControl = ({ studies, currentStudyId, onAddStudy, onDeleteStudy }) => {
   const [newStudyName, setNewStudyName] = useState('');
@@ -7,24 +8,25 @@ const StudyManagementControl = ({ studies, currentStudyId, onAddStudy, onDeleteS
 
   const handleCreateStudy = (e) => {
     e.preventDefault();
-    if (!newStudyName.trim()) return;
-    onAddStudy(newStudyName.trim(), newStudyGoal);
+    const result = validateStudyCreation(newStudyName, newStudyGoal);
+    if (result.error) return;
+    
+    onAddStudy(result.name, result.goal);
     setNewStudyName('');
     setNewStudyGoal('');
   };
 
   const handleDeleteStudy = (id) => {
-    const study = studies.find((s) => s.id === id);
-    if (!study) return;
-
-    // The delete button is disabled in the UI when this is the only study,
-    // but guard here too in case it's ever triggered another way.
-    if (studies.length <= 1) {
-      window.alert('Cannot delete the only study. Create another study first, then delete this one.');
+    const result = validateStudyDeletion(id, studies);
+    
+    if (result.error) {
+      if (result.error === 'Cannot delete the only study. Create another study first, then delete this one.') {
+        window.alert(result.error);
+      }
       return;
     }
 
-    if (window.confirm(`Delete study "${study.name}"? This permanently deletes all of its participants and measurements. This cannot be undone.`)) {
+    if (window.confirm(`Delete study "${result.study.name}"? This permanently deletes all of its participants and measurements. This cannot be undone.`)) {
       onDeleteStudy(id);
     }
   };

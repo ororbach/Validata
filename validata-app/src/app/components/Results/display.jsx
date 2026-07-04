@@ -1,8 +1,7 @@
 import { useState, useMemo } from 'react';
-import { FileSpreadsheet, CheckCircle, X, ArrowDownUp, ArrowDown } from 'lucide-react';
+import { FileSpreadsheet, CheckCircle, X, ArrowDownUp, ArrowDown, HelpCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { formatDateForDisplay } from './service';
-import HoverTooltip from '../common/HoverTooltip';
 
 const RESULTS_EXPORT_HEADERS = ['Enrollment Date', 'Test Date', 'Participant', 'Goniometer', 'AI/ML Model', 'Notes'];
 
@@ -264,7 +263,18 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
                 <th className="py-3 px-3 font-medium">Goniometer</th>
                 <th className="py-3 px-3 font-medium">AI/ML Model</th>
                 <th className="py-3 px-3 font-medium">Notes</th>
-                <th className="py-3 px-3 font-medium">Valid/Invalid</th>
+                <th className="py-3 px-3 font-medium">
+                  <div className="flex items-center gap-1.5">
+                    Valid/Invalid
+                    <div className="relative group flex items-center">
+                      <HelpCircle className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-help" />
+                      <div className="absolute top-full right-0 mt-2 w-64 p-2 bg-slate-800 text-white text-xs rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] pointer-events-none text-left whitespace-normal font-normal">
+                        Invalidating a measurement permanently excludes it from all statistical calculations. This action cannot be undone.
+                        <div className="absolute bottom-full right-2 border-4 border-transparent border-b-slate-800"></div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -290,14 +300,12 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
                       <td className="py-3 px-3 text-sm text-slate-500 dark:text-slate-400">{m.notes || '-'}</td>
                       <td className="py-3 px-3">
                         {isValid ? (
-                          <HoverTooltip text="Permanently excludes this measurement from statistics. This cannot be undone.">
                             <button
                               onClick={() => handleMarkInvalidClick(m.id)}
                               className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full cursor-pointer transition-colors bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/70"
                             >
                               <CheckCircle className="w-3.5 h-3.5" /> Valid
                             </button>
-                          </HoverTooltip>
                         ) : (
                           <span className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">
                             <X className="w-3.5 h-3.5" /> Invalid
