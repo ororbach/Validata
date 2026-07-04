@@ -90,16 +90,66 @@ export const calculateMAE = (data) => {
 };
 
 export const calculateBlandAltman = (data) => {
-  if (!data.length) return { meanDiff: 0, upperLimit: 0, lowerLimit: 0 };
+  if (!data.length) return { meanDiff: 0, upperLimit: 0, lowerLimit: 0, isNormal: true, method: 'parametric' };
+  
   const diffs = data.map((d) => d.aiAngle - d.goniometerAngle);
-  const meanDiff = diffs.reduce((a, b) => a + b, 0) / diffs.length;
-  const variance = diffs.reduce((acc, d) => acc + (d - meanDiff) ** 2, 0) / diffs.length;
+  const n = diffs.length;
+  
+  // Sort for percentiles and median
+  const sortedDiffs = [...diffs].sort((a, b) => a - b);
+  
+  const meanDiff = diffs.reduce((a, b) => a + b, 0) / n;
+  const variance = diffs.reduce((acc, d) => acc + (d - meanDiff) ** 2, 0) / n;
   const sd = Math.sqrt(variance);
-  return {
-    meanDiff,
-    upperLimit: meanDiff + 1.96 * sd,
-    lowerLimit: meanDiff - 1.96 * sd,
-  };
+  
+  // Normality test (heuristic using skewness and kurtosis)
+  let m3 = 0, m4 = 0;
+  diffs.forEach(d => {
+      const dev = d - meanDiff;
+      m3 += dev ** 3;
+      m4 += dev ** 4;
+  });
+  m3 /= n;
+  m4 /= n;
+  const skewness = variance > 0 ? m3 / Math.pow(variance, 1.5) : 0;
+  const kurtosis = variance > 0 ? (m4 / Math.pow(variance, 2)) - 3 : 0;
+  
+  // Consider normal if absolute skewness < 1 and absolute excess kurtosis < 1.5
+  // Also require at least 4 samples to make kurtosis meaningful
+  const isNormal = n < 4 || (Math.abs(skewness) < 1 && Math.abs(kurtosis) < 1.5);
+
+  if (isNormal) {
+    return {
+      meanDiff,
+      upperLimit: meanDiff + 1.96 * sd,
+      lowerLimit: meanDiff - 1.96 * sd,
+      isNormal: true,
+      method: 'parametric'
+    };
+  } else {
+    // Non-parametric limits
+    const median = n % 2 === 0 
+      ? (sortedDiffs[n/2 - 1] + sortedDiffs[n/2]) / 2 
+      : sortedDiffs[Math.floor(n/2)];
+    
+    // Percentiles 2.5 and 97.5
+    const getPercentile = (p) => {
+        const index = p * (n - 1);
+        const lower = Math.floor(index);
+        const upper = lower + 1;
+        const weight = index % 1;
+        if (upper >= n) return sortedDiffs[lower];
+        return sortedDiffs[lower] * (1 - weight) + sortedDiffs[upper] * weight;
+    };
+    
+    return {
+      meanDiff: median,
+      upperLimit: getPercentile(0.975),
+      lowerLimit: getPercentile(0.025),
+      isNormal: false,
+      method: 'non-parametric'
+    };
+  }
 };
 
 export const binDifferences = (data, binCount = 10) => {

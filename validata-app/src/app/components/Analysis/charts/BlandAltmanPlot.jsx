@@ -2,6 +2,7 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, CartesianGrid,
   Tooltip, ReferenceLine, ResponsiveContainer, Label,
 } from 'recharts';
+import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisTextColor } from '../chartConfig';
 import { useTheme } from '../../../../context/ThemeContext';
 import YLabelChart from './YLabelChart';
@@ -27,12 +28,26 @@ const BlandAltmanPlot = ({ data }) => {
   const { theme } = useTheme();
   if (!data || !data.plotData?.length) return null;
 
-  const { plotData, meanDiff, upperLimit, lowerLimit } = data;
+  const { plotData, meanDiff, upperLimit, lowerLimit, isNormal } = data;
   const gridColor = getGridColor(theme);
   const axisTextColor = getAxisTextColor(theme);
 
   return (
-    <YLabelChart label="AI − Goniometer (degrees)" color={axisTextColor}>
+    <div className="relative w-full h-full">
+      {isNormal !== undefined && (
+        <div 
+          className={`absolute top-0 right-4 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-medium border shadow-sm ${
+            isNormal 
+              ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50' 
+              : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/50'
+          }`}
+          title={isNormal ? "Normal distribution (Parametric limits)" : "Non-normal distribution (Non-parametric limits using median and percentiles)"}
+        >
+          {isNormal ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+          <span>{isNormal ? 'Normal Distribution' : 'Non-Normal Distribution'}</span>
+        </div>
+      )}
+      <YLabelChart label="AI − Goniometer (degrees)" color={axisTextColor}>
       <ResponsiveContainer width="100%" height={CHART_HEIGHT}>
         <ScatterChart margin={{ ...CHART_MARGIN, left: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
@@ -46,24 +61,25 @@ const BlandAltmanPlot = ({ data }) => {
             y={meanDiff}
             stroke={COLORS.bias}
             strokeWidth={2}
-            label={{ value: `Bias: ${meanDiff.toFixed(2)}°`, position: 'insideTopRight', fontSize: 10, fill: COLORS.bias }}
+            label={{ value: data.isNormal === false ? `Median: ${meanDiff.toFixed(2)}°` : `Bias: ${meanDiff.toFixed(2)}°`, position: 'insideTopRight', fontSize: 10, fill: COLORS.bias }}
           />
           <ReferenceLine
             y={upperLimit}
             stroke={COLORS.limit}
             strokeDasharray="4 4"
-            label={{ value: `+1.96 SD: ${upperLimit.toFixed(2)}°`, position: 'insideTopRight', fontSize: 10, fill: COLORS.limit }}
+            label={{ value: data.isNormal === false ? `97.5th: ${upperLimit.toFixed(2)}°` : `+1.96 SD: ${upperLimit.toFixed(2)}°`, position: 'insideTopRight', fontSize: 10, fill: COLORS.limit }}
           />
           <ReferenceLine
             y={lowerLimit}
             stroke={COLORS.limit}
             strokeDasharray="4 4"
-            label={{ value: `−1.96 SD: ${lowerLimit.toFixed(2)}°`, position: 'insideBottomRight', fontSize: 10, fill: COLORS.limit }}
+            label={{ value: data.isNormal === false ? `2.5th: ${lowerLimit.toFixed(2)}°` : `−1.96 SD: ${lowerLimit.toFixed(2)}°`, position: 'insideBottomRight', fontSize: 10, fill: COLORS.limit }}
           />
           <Scatter data={plotData} fill={COLORS.primary} opacity={0.75} />
         </ScatterChart>
       </ResponsiveContainer>
     </YLabelChart>
+    </div>
   );
 };
 

@@ -90,7 +90,7 @@ export async function POST(request) {
 
       const rmse = calculateRMSE(statsData);
       const mae = calculateMAE(statsData);
-      const { meanDiff, upperLimit, lowerLimit } = calculateBlandAltman(statsData);
+      const { meanDiff, upperLimit, lowerLimit, isNormal, method } = calculateBlandAltman(statsData);
       const { pass, fail, percentage } = calculatePassRate(statsData, threshold);
 
       return Response.json({
@@ -101,7 +101,7 @@ export async function POST(request) {
         summaryStats: { rmse, mae, meanBias: meanDiff, passRate: percentage },
         descriptiveStats,
         charts: {
-          blandAltman: { plotData: getDifferences(statsData), meanDiff, upperLimit, lowerLimit },
+          blandAltman: { plotData: getDifferences(statsData), meanDiff, upperLimit, lowerLimit, isNormal, method },
           errorHistogram: { bins: binDifferences(statsData) },
           performanceTrend: { sessions: calculateRMSEPerSession(statsData) },
           thresholdDonut: { pass, fail, percentage, threshold }
