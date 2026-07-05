@@ -210,8 +210,7 @@ const ParticipantsDisplay = ({
                     <span className="text-slate-500 dark:text-slate-400">Enrolled: {p.enrollmentDateDisplay || '—'}</span>
                   </div>
                   {normalizedStatus !== 'dropped' && (
-                    // No HoverTooltip here: touch has no hover, so it would
-                    // rarely surface. The permanence warning is carried by
+                    // The permanence warning is carried by
                     // the confirm() dialog instead (see handleDropParticipant).
                     // Fixed-width pills so "Mark Complete"/"Mark Not Completed"
                     // toggling doesn't shift the Drop button's position.
