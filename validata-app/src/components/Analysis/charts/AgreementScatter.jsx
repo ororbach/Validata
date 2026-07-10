@@ -3,7 +3,7 @@ import {
   Tooltip, ReferenceLine, ResponsiveContainer, Label,
 } from 'recharts';
 import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisTextColor } from '../chartConfig';
-import { useTheme } from '../../../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
 const CustomTooltip = ({ active, payload }) => {
@@ -58,3 +58,4 @@ const AgreementScatter = ({ data }) => {
 };
 
 export default AgreementScatter;
+

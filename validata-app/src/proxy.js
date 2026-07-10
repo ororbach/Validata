@@ -14,11 +14,9 @@ export function proxy(request) {
   }
 
   // 2. Check for authentication cookies
-  // We check for either a Supabase token or a active Demo session
   const token = request.cookies.get('sb-access-token')?.value;
-  const demoSession = request.cookies.get('demo-session')?.value;
 
-  const isAuthenticated = !!token || !!demoSession;
+  const isAuthenticated = !!token;
 
   // 3. Handle unauthenticated requests
   if (!isAuthenticated) {

@@ -13,24 +13,7 @@ export function getSupabaseServerClient(token) {
 }
 
 export async function verifySession() {
-  // Check if we are in a demo mode request
   const cookieStore = await cookies();
-  const demoSessionCookie = cookieStore.get('demo-session')?.value;
-  
-  if (demoSessionCookie) {
-    try {
-      const sessionData = JSON.parse(demoSessionCookie);
-      return {
-        user: { id: 'demo-user-id', email: sessionData.email },
-        profile: { role: sessionData.role, status: 'active' },
-        isDemo: true,
-        supabaseClient: null
-      };
-    } catch (e) {
-      // Failed to parse, proceed to real auth checks
-    }
-  }
-
   const token = cookieStore.get('sb-access-token')?.value;
   if (!token) {
     return { error: 'Unauthorized. No session token found.', status: 401 };
@@ -73,7 +56,6 @@ export async function verifySession() {
     return {
       user,
       profile: newProfile,
-      isDemo: false,
       supabaseClient: supabaseServer
     };
   }
@@ -85,8 +67,6 @@ export async function verifySession() {
   return {
     user,
     profile,
-    isDemo: false,
     supabaseClient: supabaseServer
   };
 }
-

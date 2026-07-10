@@ -15,7 +15,6 @@ export default function LoginDisplay({
   setErrorMessage,
   successMessage,
   setSuccessMessage,
-  isSupabaseConfigured,
   handleSubmit
 }) {
   return (
@@ -37,17 +36,6 @@ export default function LoginDisplay({
           </h1>
           <p className="text-slate-400 text-sm mt-1">Clinical Trial Validation Portal</p>
         </div>
-
-        {/* Database Status Alert */}
-        {!isSupabaseConfigured && (
-          <div className="mb-6 p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-start gap-2.5 text-xs text-amber-300">
-            <Database className="h-4 w-4 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-semibold block">Supabase is not configured.</span>
-              Using Demo Mode fallback. You can login using the Quick Login buttons.
-            </div>
-          </div>
-        )}
 
         {/* Error / Success Toast Messages inside the card */}
         {errorMessage && (

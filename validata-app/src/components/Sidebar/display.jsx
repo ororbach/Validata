@@ -1,6 +1,6 @@
 
 import { LogOut, Sun, Moon, ChevronLeft, ChevronRight, FlaskConical } from 'lucide-react';
-import { useTheme } from '../../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 
 // Pure presentational component
 const SidebarDisplay = ({
@@ -218,3 +218,4 @@ const SidebarDisplay = ({
 };
 
 export default SidebarDisplay;
+

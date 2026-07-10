@@ -1,4 +1,4 @@
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 // --- Auth & Profiles ---
 export const signOut = async () => {
@@ -131,3 +131,4 @@ export const updateMeasurementValidity = async (id, isValid) => {
   if (!res.ok) throw new Error(data.error || 'Failed to update measurement validity');
   return data;
 };
+

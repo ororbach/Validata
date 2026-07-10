@@ -20,7 +20,6 @@ export default function DashboardDisplay({
   studies,
   currentStudyId,
   handleSwitchStudy,
-  isDemoMode,
   toastMessage,
   showToast,
   setShowToast,
@@ -122,16 +121,6 @@ export default function DashboardDisplay({
           to this box without disturbing the inner content's scroll position. */}
       <main className="flex-1 relative flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 pt-12 md:pt-0">
         <div className="flex-1 overflow-y-auto flex flex-col">
-          {/* Demo Mode Banner */}
-          {isDemoMode && (
-            <div className="bg-amber-50 dark:bg-amber-950 border-b border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 px-6 py-2.5 flex items-center justify-between text-sm shadow-sm font-medium z-10">
-              <div className="flex items-center gap-2">
-                <span className="flex h-2 w-2 rounded-full bg-amber-500 animate-ping"></span>
-                <span><strong>Running in Demo Mode:</strong> Using local mock data. Fill in credentials in <code>.env.local</code> to connect to Supabase.</span>
-              </div>
-            </div>
-          )}
-
           <Toast
             message={toastMessage}
             show={showToast}
@@ -173,7 +162,6 @@ export default function DashboardDisplay({
               participants={participants}
               measurements={measurements}
               onGenerateReport={handleGenerateReport}
-              isDemoMode={isDemoMode}
             />
           )}
 
@@ -183,7 +171,6 @@ export default function DashboardDisplay({
 
           {currentView === 'userManagement' && userRole === 'mentor' && (
             <UserManagement
-              isDemoMode={isDemoMode}
               currentUserEmail={currentUserEmail}
             />
           )}

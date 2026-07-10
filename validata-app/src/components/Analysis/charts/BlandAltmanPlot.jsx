@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { AlertCircle, CheckCircle2 } from 'lucide-react';
 import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisTextColor } from '../chartConfig';
-import { useTheme } from '../../../../context/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
 const CustomTooltip = ({ active, payload }) => {
@@ -83,3 +83,4 @@ const BlandAltmanPlot = ({ data }) => {
 };
 
 export default BlandAltmanPlot;
+

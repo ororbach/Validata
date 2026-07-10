@@ -11,9 +11,8 @@ import Results from '../Results/control';
 import UserManagement from '../UserManagement/control';
 import StudyManagement from '../StudyManagement/control';
 import Toast from '../Toast/control';
-import mockData from '../../../mockData.json';
-import { supabase } from '../../../lib/supabase';
-import { getCookie, setCookie, deleteCookie } from '../../../lib/cookies';
+import { supabase } from '@/lib/supabase';
+import { getCookie, setCookie, deleteCookie } from '@/lib/cookies';
 
 import * as XLSX from 'xlsx';
 
@@ -45,9 +44,7 @@ export default function DashboardControl() {
   // App data
   const [participants, setParticipants] = useState([]);
   const [measurements, setMeasurements] = useState([]);
-  const [isDemoMode, setIsDemoMode] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-  const [nextId, setNextId] = useState(1009);
 
   // Studies (multi-study support: each study has its own participants/measurements/goal)
   const [studies, setStudies] = useState([]);
@@ -89,14 +86,11 @@ export default function DashboardControl() {
   const handleLogout = async () => {
     // Clear cookies
     deleteCookie('sb-access-token');
-    deleteCookie('demo-session');
     deleteCookie('user-role');
     deleteCookie('user-status');
 
     try {
-      if (!isDemoMode) {
-        await signOut();
-      }
+      await signOut();
     } catch (e) {
       console.warn('Supabase logout warning:', e);
     }
@@ -105,36 +99,9 @@ export default function DashboardControl() {
     router.refresh();
   };
 
-  // Fetches participants + measurements for one study, mapping DB/mock shapes
-  // to the frontend's expected camelCase records. Shared by the initial load
-  // and by handleSwitchStudy/handleAddStudy.
-  const loadDataForStudy = async (studyId, demoFlag) => {
-    if (demoFlag) {
-      const filteredParticipants = mockData.participants.filter((p) => p.study_id === studyId);
-      const filteredMeasurements = mockData.measurements.filter((m) => m.study_id === studyId);
-
-      const mappedMeasurements = filteredMeasurements.map((m, idx) => {
-        const participantRecord = filteredParticipants.find(p => p.id === m.participant);
-        const enrollmentDate = participantRecord?.enrollmentDate || null;
-
-        return {
-          id: filteredMeasurements.length - idx,
-          participant: m.participant,
-          goniometer: m.goniometer,
-          aiModel: m.aiModel,
-          notes: m.notes,
-          timestamp: m.timestamp,
-          testDate: m.testDate || m.test_date || null,
-          enrollmentDate,
-          isValid: m.isValid !== false
-        };
-      });
-
-      setParticipants(filteredParticipants);
-      setMeasurements(mappedMeasurements);
-      return;
-    }
-
+  // Fetches participants + measurements for one study, mapping DB shapes
+  // to the frontend's expected camelCase records.
+  const loadDataForStudy = async (studyId) => {
     const resP = await fetch(`/api/participants?study_id=${studyId}`);
     if (!resP.ok) throw new Error('Failed to fetch participants');
     const pData = await resP.json();
@@ -193,7 +160,7 @@ export default function DashboardControl() {
     setCurrentStudyId(studyId);
     setIsLoading(true);
     try {
-      await loadDataForStudy(studyId, isDemoMode);
+      await loadDataForStudy(studyId);
     } catch (error) {
       console.error('Error switching study:', error);
       triggerToast('Failed to load study: ' + error.message);
@@ -204,16 +171,6 @@ export default function DashboardControl() {
 
   const handleAddStudy = async (name, goal) => {
     const recruitmentGoal = parseInt(goal) || 50;
-
-    if (isDemoMode) {
-      const newStudy = { id: `demo-${Date.now()}`, name, recruitment_goal: recruitmentGoal };
-      setStudies((prev) => [...prev, newStudy]);
-      setCurrentStudyId(newStudy.id);
-      setParticipants([]);
-      setMeasurements([]);
-      triggerToast(`Study "${name}" created. (Demo)`);
-      return;
-    }
 
     try {
       const res = await fetch('/api/studies', {
@@ -236,9 +193,6 @@ export default function DashboardControl() {
     }
   };
 
-  // Deleting a study permanently deletes all of its participants and
-  // measurements too - confirmation lives in StudyManagement/control.jsx,
-  // this handler just performs the (already-confirmed) deletion.
   const handleDeleteStudy = async (id) => {
     const study = studies.find((s) => s.id === id);
     if (!study) return;
@@ -246,21 +200,6 @@ export default function DashboardControl() {
     const remaining = studies.filter((s) => s.id !== id);
     const wasCurrent = currentStudyId === id;
     const nextStudyId = wasCurrent ? (remaining.length > 0 ? remaining[0].id : null) : currentStudyId;
-
-    if (isDemoMode) {
-      setStudies(remaining);
-      if (wasCurrent) {
-        setCurrentStudyId(nextStudyId);
-        if (nextStudyId) {
-          await loadDataForStudy(nextStudyId, true);
-        } else {
-          setParticipants([]);
-          setMeasurements([]);
-        }
-      }
-      triggerToast(`Study "${study.name}" deleted. (Demo)`);
-      return;
-    }
 
     try {
       const res = await fetch(`/api/studies?id=${id}`, { method: 'DELETE' });
@@ -271,7 +210,7 @@ export default function DashboardControl() {
       if (wasCurrent) {
         setCurrentStudyId(nextStudyId);
         if (nextStudyId) {
-          await loadDataForStudy(nextStudyId, false);
+          await loadDataForStudy(nextStudyId);
         } else {
           setParticipants([]);
           setMeasurements([]);
@@ -288,12 +227,6 @@ export default function DashboardControl() {
     const goal = parseInt(newGoal);
     if (isNaN(goal) || goal < 1) {
       triggerToast('Recruitment goal must be a positive number.');
-      return;
-    }
-
-    if (isDemoMode) {
-      setStudies((prev) => prev.map((s) => (s.id === currentStudyId ? { ...s, recruitment_goal: goal } : s)));
-      triggerToast('Recruitment goal updated. (Demo)');
       return;
     }
 
@@ -321,10 +254,8 @@ export default function DashboardControl() {
       setIsLoading(true);
 
       const token = getCookie('sb-access-token');
-      const demoSessionStr = getCookie('demo-session');
 
-      // 1. Check if authenticated
-      if (!token && !demoSessionStr) {
+      if (!token) {
         router.push('/login');
         return;
       }
@@ -332,57 +263,40 @@ export default function DashboardControl() {
       let email = '';
       let role = 'team_member';
       let status = 'pending';
-      let isDemo = false;
 
-      // 2. Parse Demo Session
-      if (demoSessionStr) {
-        try {
-          const ds = JSON.parse(demoSessionStr);
-          email = ds.email;
-          role = ds.role;
-          status = ds.status;
-          isDemo = true;
-        } catch (e) {
-          router.push('/login');
-          return;
+      try {
+        const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+        if (userError || !user) throw new Error('Auth session invalid');
+
+        email = user.email;
+
+        // Fetch profile details
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+
+        if (profileError || !profile) {
+          console.warn('Profile fetch warning/error, falling back to cookies:', profileError?.message);
+          role = getCookie('user-role') || 'team_member';
+          status = getCookie('user-status') || 'pending';
+        } else {
+          role = profile.role;
+          status = profile.status;
+          // Update cookies to keep in sync with database updates
+          setCookie('user-role', role, 7);
+          setCookie('user-status', status, 7);
         }
-      } else {
-        // 3. Verify Supabase Session
-        try {
-          const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-          if (userError || !user) throw new Error('Auth session invalid');
-
-          email = user.email;
-
-          // Fetch profile details
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-          if (profileError || !profile) {
-            console.warn('Profile fetch warning/error, falling back to cookies:', profileError?.message);
-            role = getCookie('user-role') || 'team_member';
-            status = getCookie('user-status') || 'pending';
-          } else {
-            role = profile.role;
-            status = profile.status;
-            // Update cookies to keep in sync with database updates
-            setCookie('user-role', role, 7);
-            setCookie('user-status', status, 7);
-          }
-        } catch (e) {
-          console.warn('Session verification failed, logging out:', e.message);
-          handleLogout();
-          return;
-        }
+      } catch (e) {
+        console.warn('Session verification failed, logging out:', e.message);
+        handleLogout();
+        return;
       }
 
       setCurrentUserEmail(email);
       setUserRole(role);
       setUserStatus(status);
-      setIsDemoMode(isDemo);
 
       // If account status is not active, stop here and do not load dashboard data
       if (status !== 'active') {
@@ -390,17 +304,12 @@ export default function DashboardControl() {
         return;
       }
 
-      // 4. Fetch Studies, then this study's participants/measurements (Only if Active)
+      // Fetch Studies, then this study's participants/measurements (Only if Active)
       try {
-        let studyList;
-        if (isDemo) {
-          studyList = mockData.studies;
-        } else {
-          const resStudies = await fetch('/api/studies');
-          if (!resStudies.ok) throw new Error('Failed to fetch studies');
-          studyList = await resStudies.json();
-          if (studyList.error) throw new Error(studyList.error);
-        }
+        const resStudies = await fetch('/api/studies');
+        if (!resStudies.ok) throw new Error('Failed to fetch studies');
+        const studyList = await resStudies.json();
+        if (studyList.error) throw new Error(studyList.error);
 
         setStudies(studyList);
         const savedStudyId = getSavedStudyId();
@@ -409,17 +318,11 @@ export default function DashboardControl() {
         setCurrentStudyId(defaultStudyId);
 
         if (defaultStudyId) {
-          await loadDataForStudy(defaultStudyId, isDemo);
+          await loadDataForStudy(defaultStudyId);
         }
       } catch (error) {
-        console.warn('API connection error, falling back to Demo Mode:', error);
-        setIsDemoMode(true);
-        const savedStudyId = getSavedStudyId();
-        const demoStudyId = mockData.studies.find((s) => s.id === savedStudyId)?.id
-          ?? (mockData.studies.length > 0 ? mockData.studies[0].id : null);
-        setStudies(mockData.studies);
-        setCurrentStudyId(demoStudyId);
-        if (demoStudyId) await loadDataForStudy(demoStudyId, true);
+        console.error('API connection error:', error);
+        triggerToast('Failed to load initial data.');
       } finally {
         setIsLoading(false);
       }
@@ -435,9 +338,30 @@ export default function DashboardControl() {
       return;
     }
 
-    if (isDemoMode) {
-      const newId = `P-${nextId}`;
-      setNextId((prev) => prev + 1);
+    try {
+      const nextNumericId = participants.length > 0
+        ? Math.max(...participants.map(p => parseInt(p.id.split('-')[1]) || 1000)) + 1
+        : 1001;
+      const newId = `P-${nextNumericId}`;
+
+      const res = await fetch('/api/participants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: newId,
+          consent,
+          age: parseInt(age) || null,
+          gender,
+          healthStatus,
+          enrollmentDate: enrollmentDate || new Date().toISOString().split('T')[0],
+          studyId: currentStudyId
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to add participant');
+      }
 
       const newParticipant = {
         id: newId,
@@ -449,117 +373,59 @@ export default function DashboardControl() {
         study_id: currentStudyId,
         enrollmentDate: enrollmentDate || new Date().toISOString().split('T')[0]
       };
+
       setParticipants([newParticipant, ...participants]);
-      triggerToast(`Participant ${newId} registered successfully! (Demo)`);
-    } else {
-      try {
-        const nextNumericId = participants.length > 0
-          ? Math.max(...participants.map(p => parseInt(p.id.split('-')[1]) || 1000)) + 1
-          : 1001;
-        const newId = `P-${nextNumericId}`;
-
-        const res = await fetch('/api/participants', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            id: newId,
-            consent,
-            age: parseInt(age) || null,
-            gender,
-            healthStatus,
-            enrollmentDate: enrollmentDate || new Date().toISOString().split('T')[0],
-            studyId: currentStudyId
-          })
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Failed to add participant');
-        }
-
-        const newParticipant = {
-          id: newId,
-          consent,
-          status: 'Active',
-          age: parseInt(age) || null,
-          gender,
-          healthStatus,
-          study_id: currentStudyId,
-          enrollmentDate: enrollmentDate || new Date().toISOString().split('T')[0]
-        };
-
-        setParticipants([newParticipant, ...participants]);
-        triggerToast(`Participant ${newId} registered and saved in database!`);
-      } catch (error) {
-        console.error('Error adding participant:', error);
-        triggerToast('Failed to save participant: ' + error.message);
-      }
+      triggerToast(`Participant ${newId} registered and saved in database!`);
+    } catch (error) {
+      console.error('Error adding participant:', error);
+      triggerToast('Failed to save participant: ' + error.message);
     }
   };
 
   const handleDropParticipant = async (id) => {
     if (window.confirm(`This will permanently drop participant ${id} from the study and mark all of their measurements as invalid. This cannot be undone. Continue?`)) {
-      if (isDemoMode) {
+      try {
+        const res = await fetch('/api/participants', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, status: 'Dropped', studyId: currentStudyId })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Failed to drop participant');
+        }
+
+        const measRes = await fetch('/api/measurements', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ participantId: id, studyId: currentStudyId, isValid: false })
+        });
+
+        if (!measRes.ok) {
+          const errData = await measRes.json();
+          throw new Error(errData.error || 'Failed to invalidate participant measurements');
+        }
+
         setParticipants(
           participants.map((p) => (p.id === id ? { ...p, status: 'Dropped' } : p))
         );
         setMeasurements((prev) =>
           prev.map((m) => (m.participant === id ? { ...m, isValid: false } : m))
         );
-        triggerToast('Participant status updated. (Demo)');
-      } else {
-        try {
-          const res = await fetch('/api/participants', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id, status: 'Dropped', studyId: currentStudyId })
-          });
-
-          if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error || 'Failed to drop participant');
-          }
-
-          const measRes = await fetch('/api/measurements', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ participantId: id, studyId: currentStudyId, isValid: false })
-          });
-
-          if (!measRes.ok) {
-            const errData = await measRes.json();
-            throw new Error(errData.error || 'Failed to invalidate participant measurements');
-          }
-
-          setParticipants(
-            participants.map((p) => (p.id === id ? { ...p, status: 'Dropped' } : p))
-          );
-          setMeasurements((prev) =>
-            prev.map((m) => (m.participant === id ? { ...m, isValid: false } : m))
-          );
-          triggerToast(`Participant ${id} dropped successfully. Their measurements were marked invalid.`);
-        } catch (error) {
-          console.error('Error updating participant status:', error);
-          triggerToast('Failed to update participant: ' + error.message);
-        }
+        triggerToast(`Participant ${id} dropped successfully. Their measurements were marked invalid.`);
+      } catch (error) {
+        console.error('Error updating participant status:', error);
+        triggerToast('Failed to update participant: ' + error.message);
       }
     }
   };
 
-  // Completed is a manual, reversible toggle (Active <-> Completed) available
-  // to any active user - there's no global rule for "how many measurements
-  // counts as done", so the system never guesses; a person always decides.
   const handleToggleParticipantCompleted = async (id) => {
     const participant = participants.find((p) => p.id === id);
     if (!participant) return;
 
     const nextStatus = participant.status === 'Completed' ? 'Active' : 'Completed';
-
-    if (isDemoMode) {
-      setParticipants(participants.map((p) => (p.id === id ? { ...p, status: nextStatus } : p)));
-      triggerToast(`Participant marked ${nextStatus.toLowerCase()}. (Demo)`);
-      return;
-    }
 
     try {
       const res = await fetch('/api/participants', {
@@ -598,85 +464,51 @@ export default function DashboardControl() {
         .toString()
         .padStart(2, '0')}:${nowObj.getMinutes().toString().padStart(2, '0')}`;
 
-    if (isDemoMode) {
-      const simulatedId = measurements.length > 0
-        ? Math.max(...measurements.map(m => parseInt(m.id) || 0)) + 1
-        : 1;
+    try {
+      const res = await fetch('/api/measurements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          participantId,
+          goniometer,
+          aiModel,
+          notes,
+          testDate: testDate || new Date().toISOString().split('T')[0],
+          studyId: currentStudyId
+        })
+      });
 
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to log measurement');
+      }
+
+      const savedData = await res.json();
       // Look up participant's enrollment date
-      const participantRecord = participants.find(p => p.id === participantId);
+      const participantRecord = participants.find(p => p.id === savedData.participant_id);
       const enrollmentDate = participantRecord?.enrollmentDate || null;
 
       const newMeasurement = {
-        id: simulatedId,
-        participant: participantId,
-        goniometer: goniometer.includes('°') ? goniometer : `${goniometer}°`,
-        aiModel: aiModel.includes('°') ? aiModel : `${aiModel}°`,
-        notes,
+        id: savedData.id,
+        participant: savedData.participant_id,
+        goniometer: `${parseFloat(savedData.goniometer).toFixed(1)}°`,
+        aiModel: `${parseFloat(savedData.ai_model).toFixed(1)}°`,
+        notes: savedData.notes,
         timestamp: formattedTimestamp,
-        testDate: testDate || new Date().toISOString().split('T')[0],
+        testDate: savedData.test_date || savedData.testDate || testDate || new Date().toISOString().split('T')[0],
         enrollmentDate,
         isValid: true
       };
 
       setMeasurements([newMeasurement, ...measurements]);
-      triggerToast('Measurement logged and saved! (Demo)');
-    } else {
-      try {
-        const res = await fetch('/api/measurements', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            participantId,
-            goniometer,
-            aiModel,
-            notes,
-            testDate: testDate || new Date().toISOString().split('T')[0],
-            studyId: currentStudyId
-          })
-        });
-
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Failed to log measurement');
-        }
-
-        const savedData = await res.json();
-        // Look up participant's enrollment date
-        const participantRecord = participants.find(p => p.id === savedData.participant_id);
-        const enrollmentDate = participantRecord?.enrollmentDate || null;
-
-        const newMeasurement = {
-          id: savedData.id,
-          participant: savedData.participant_id,
-          goniometer: `${parseFloat(savedData.goniometer).toFixed(1)}°`,
-          aiModel: `${parseFloat(savedData.ai_model).toFixed(1)}°`,
-          notes: savedData.notes,
-          timestamp: formattedTimestamp,
-          testDate: savedData.test_date || savedData.testDate || testDate || new Date().toISOString().split('T')[0],
-          enrollmentDate,
-          isValid: true
-        };
-
-        setMeasurements([newMeasurement, ...measurements]);
-        triggerToast('Measurement saved directly to the database!');
-      } catch (error) {
-        console.error('Error logging measurement:', error);
-        triggerToast('Failed to save measurement: ' + error.message);
-      }
+      triggerToast('Measurement saved directly to the database!');
+    } catch (error) {
+      console.error('Error logging measurement:', error);
+      triggerToast('Failed to save measurement: ' + error.message);
     }
   };
 
-  // Valid -> Invalid is one-way and irreversible (like Drop): once invalid,
-  // there is no UI path back to valid, so this is only ever called with the
-  // measurement going from valid to invalid.
   const handleMarkMeasurementInvalid = async (id) => {
-    if (isDemoMode) {
-      setMeasurements((prev) => prev.map((m) => (m.id === id ? { ...m, isValid: false } : m)));
-      triggerToast('Measurement marked invalid. (Demo)');
-      return;
-    }
-
     try {
       const res = await fetch('/api/measurements', {
         method: 'PATCH',
@@ -795,52 +627,29 @@ export default function DashboardControl() {
       };
 
       try {
-        if (isDemoMode) {
-          const simulatedId = (measurements.length + newMeasurements.length) > 0
-            ? Math.max(...measurements.map(m => parseInt(m.id) || 0)) + newMeasurements.length + 1
-            : newMeasurements.length + 1;
+        const res = await fetch('/api/measurements', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
 
-          // Look up enrollment date from participants
-          const participantRecord = participants.find(p => p.id === pId);
-          const enrollmentDate = participantRecord?.enrollmentDate || null;
-
-          newMeasurements.push({
-            id: simulatedId,
-            participant: pId,
-            goniometer: `${parsedGoniometer.toFixed(1)}°`,
-            aiModel: `${parsedAiModel.toFixed(1)}°`,
-            notes,
-            timestamp: formattedTimestamp,
-            testDate: testDateValue || new Date().toISOString().split('T')[0],
-            enrollmentDate,
-            isValid: true
-          });
-          successCount++;
-        } else {
-          const res = await fetch('/api/measurements', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          if (!res.ok) {
-            const errData = await res.json();
-            throw new Error(errData.error || 'API Error');
-          }
-
-          const savedData = await res.json();
-          newMeasurements.push({
-            id: savedData.id,
-            participant: savedData.participant_id,
-            goniometer: `${parseFloat(savedData.goniometer).toFixed(1)}°`,
-            aiModel: `${parseFloat(savedData.ai_model).toFixed(1)}°`,
-            notes: savedData.notes,
-            timestamp: formattedTimestamp,
-            testDate: savedData.test_date || savedData.testDate || testDateValue || new Date().toISOString().split('T')[0],
-            isValid: true
-          });
-          successCount++;
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'API Error');
         }
+
+        const savedData = await res.json();
+        newMeasurements.push({
+          id: savedData.id,
+          participant: savedData.participant_id,
+          goniometer: `${parseFloat(savedData.goniometer).toFixed(1)}°`,
+          aiModel: `${parseFloat(savedData.ai_model).toFixed(1)}°`,
+          notes: savedData.notes,
+          timestamp: formattedTimestamp,
+          testDate: savedData.test_date || savedData.testDate || testDateValue || new Date().toISOString().split('T')[0],
+          isValid: true
+        });
+        successCount++;
       } catch (err) {
         errorCount++;
         errors.push(`Row ${i + 2} (${pId}): Failed to save - ${err.message}`);
@@ -919,7 +728,6 @@ export default function DashboardControl() {
     triggerToast('Preparing PDF report... Download will begin shortly.');
   };
 
-
   return (
     <DashboardDisplay
       isLoading={isLoading}
@@ -932,7 +740,6 @@ export default function DashboardControl() {
       studies={studies}
       currentStudyId={currentStudyId}
       handleSwitchStudy={handleSwitchStudy}
-      isDemoMode={isDemoMode}
       toastMessage={toastMessage}
       showToast={showToast}
       setShowToast={setShowToast}

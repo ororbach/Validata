@@ -1,6 +1,6 @@
 "use client";
 
-import DashboardControl from './components/Dashboard/control';
+import DashboardControl from '@/components/Dashboard/control';
 
 export default function Home() {
   return <DashboardControl />;

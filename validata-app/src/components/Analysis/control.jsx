@@ -4,7 +4,7 @@ import AIChatControl from '../AIChat/control';
 import { fetchAnalysisData } from './service';
 
 // Controller component manages local state and fetches processed data from the API
-const AnalysisControl = ({ participants, measurements, onGenerateReport, isDemoMode, threshold = 5 }) => {
+const AnalysisControl = ({ participants, measurements, onGenerateReport, threshold = 5 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   
@@ -15,7 +15,6 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, isDemoM
 
   // Fetch pre-computed charts and stats from the API
   useEffect(() => {
-    // We fetch even in demo mode because the server handles demo data calculation too
     setAnalysisData(null); // Set to null to indicate loading
 
     fetchAnalysisData(localThreshold, participants, measurements)
@@ -46,7 +45,7 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, isDemoM
         });
         setLastUpdated(new Date());
       });
-  }, [localThreshold, isDemoMode]); // Re-fetch if threshold or mode changes
+  }, [localThreshold]); // Re-fetch if threshold changes
 
   const progressOptions = useMemo(() => ({
     responsive: true,

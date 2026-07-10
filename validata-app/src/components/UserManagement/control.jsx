@@ -2,30 +2,14 @@ import React, { useState, useEffect } from 'react';
 import UserManagementDisplay from './display';
 import { fetchUsersAPI, updateRoleAPI, updateStatusAPI, deleteUserAPI } from './service';
 
-const UserManagementControl = ({ isDemoMode, currentUserEmail }) => {
+const UserManagementControl = ({ currentUserEmail }) => {
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
 
-  // Initial mock users list for Demo Mode
-  const mockUsersList = [
-    { id: 'demo-mentor-id', email: 'mentor@demo.com', role: 'mentor', status: 'active' },
-    { id: 'demo-team-id', email: 'team@demo.com', role: 'team_member', status: 'active' },
-    { id: 'demo-pending-id', email: 'newuser@demo.com', role: 'team_member', status: 'pending' },
-    { id: 'demo-suspended-id', email: 'suspended@demo.com', role: 'team_member', status: 'suspended' }
-  ];
-
   const fetchUsers = async () => {
     setIsLoading(true);
     setError('');
-    
-    if (isDemoMode) {
-      if (users.length === 0) {
-        setUsers(mockUsersList);
-      }
-      setIsLoading(false);
-      return;
-    }
 
     try {
       const data = await fetchUsersAPI();
@@ -40,16 +24,9 @@ const UserManagementControl = ({ isDemoMode, currentUserEmail }) => {
 
   useEffect(() => {
     fetchUsers();
-  }, [isDemoMode]);
+  }, []);
 
   const handleRoleChange = async (userId, newRole) => {
-    if (isDemoMode) {
-      setUsers(prevUsers =>
-        prevUsers.map(user => (user.id === userId ? { ...user, role: newRole } : user))
-      );
-      return;
-    }
-
     try {
       await updateRoleAPI(userId, newRole);
       setUsers(prevUsers =>
@@ -61,13 +38,6 @@ const UserManagementControl = ({ isDemoMode, currentUserEmail }) => {
   };
 
   const handleStatusChange = async (userId, newStatus) => {
-    if (isDemoMode) {
-      setUsers(prevUsers =>
-        prevUsers.map(user => (user.id === userId ? { ...user, status: newStatus } : user))
-      );
-      return;
-    }
-
     try {
       await updateStatusAPI(userId, newStatus);
       setUsers(prevUsers =>
@@ -80,11 +50,6 @@ const UserManagementControl = ({ isDemoMode, currentUserEmail }) => {
 
   const handleDelete = async (userId) => {
     if (!window.confirm('Are you sure you want to delete this user profile? The user will lose access to this portal.')) {
-      return;
-    }
-
-    if (isDemoMode) {
-      setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
       return;
     }
 

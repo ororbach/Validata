@@ -1,5 +1,5 @@
-import { supabase } from '../../../lib/supabase';
-import { setCookie } from '../../../lib/cookies';
+import { supabase } from '@/lib/supabase';
+import { setCookie } from '@/lib/cookies';
 
 export const signInWithSupabase = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
@@ -58,12 +58,5 @@ export const signUpWithSupabase = async (email, password) => {
   });
 
   if (error) throw error;
-  return { success: true };
-};
-
-export const performDemoLogin = (role) => {
-  setCookie('demo-session', 'true', 7);
-  setCookie('user-role', role, 7);
-  setCookie('user-status', 'active', 7);
   return { success: true };
 };

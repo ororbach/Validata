@@ -1,4 +1,4 @@
-import LoginControl from '../components/Login/control';
+import LoginControl from '@/components/Login/control';
 
 export const metadata = {
   title: 'Login - Validata',
