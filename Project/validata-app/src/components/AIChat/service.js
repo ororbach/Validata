@@ -1,0 +1,20 @@
+// This file serves as a service for preparing data context for the AI chat.
+
+// This function prepares and filters participant and measurement data for the AI model.
+export const prepareDataContext = (participants, measurements) => {
+  return {
+    participants: participants.map(p => ({
+      id: p.id,
+      age: p.age,
+      gender: p.gender,
+      status: p.status,
+      healthStatus: p.healthStatus
+    })),
+    measurements: measurements.map(m => ({
+      participantId: m.participant,
+      goniometer: parseFloat(m.goniometer) || m.goniometer,
+      aiModel: parseFloat(m.aiModel) || m.aiModel,
+      timestamp: m.timestamp
+    }))
+  };
+};
