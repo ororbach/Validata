@@ -7,6 +7,7 @@ import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisT
 import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
+// This component renders a custom tooltip for the Bland-Altman plot points.
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
@@ -22,8 +23,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-// x = mean of (AI, goniometer), y = AI − goniometer
-// Solid line = mean bias; dashed lines = 95% limits of agreement (±1.96 SD)
+// This component displays a Bland-Altman plot to analyze differences between two measurement methods.
 const BlandAltmanPlot = ({ data }) => {
   const { theme } = useTheme();
   if (!data || !data.plotData?.length) return null;
@@ -83,4 +83,3 @@ const BlandAltmanPlot = ({ data }) => {
 };
 
 export default BlandAltmanPlot;
-

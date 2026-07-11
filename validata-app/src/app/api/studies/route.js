@@ -1,6 +1,8 @@
+// This router file handles study-related requests, including retrieval, creation, updates, and deletion.
 import { verifySession } from '@/lib/auth-server';
 import { getStudies, createStudy, updateStudyGoal, deleteStudy } from '@/services/studiesService';
 
+// This function processes GET requests to fetch the list of studies.
 export async function GET() {
   try {
     const session = await verifySession();
@@ -15,6 +17,7 @@ export async function GET() {
   }
 }
 
+// This function handles POST requests to create a new study.
 export async function POST(request) {
   try {
     const session = await verifySession();
@@ -31,6 +34,7 @@ export async function POST(request) {
   }
 }
 
+// This function manages PATCH requests to update a study's participant goal.
 export async function PATCH(request) {
   try {
     const session = await verifySession();
@@ -47,6 +51,7 @@ export async function PATCH(request) {
   }
 }
 
+// This function handles DELETE requests to remove an existing study.
 export async function DELETE(request) {
   try {
     const session = await verifySession();

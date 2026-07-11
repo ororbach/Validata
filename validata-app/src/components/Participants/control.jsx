@@ -1,8 +1,9 @@
+// This component manages the state and control logic for the participant tracking interface.
 import { useState } from 'react';
 import ParticipantsDisplay from './display';
 import { formatDateForDisplay, getTodayDateString, countRecruitedParticipants } from './service';
 
-// Controller component manages local state and acts as the entry point
+// Renders the participant control system and manages local states for new entries.
 const ParticipantsControl = ({
   participants,
   onAddParticipant,
@@ -12,6 +13,7 @@ const ParticipantsControl = ({
   onUpdateRecruitmentGoal,
   userRole
 }) => {
+  // Local state
   const [consent, setConsent] = useState(false);
   const [age, setAge] = useState('');
   const [gender, setGender] = useState('Male');
@@ -23,6 +25,7 @@ const ParticipantsControl = ({
     enrollmentDateDisplay: formatDateForDisplay(participant.enrollmentDate || participant.enrollment_date),
   }));
 
+  // Handles the submission of a new participant form.
   const handleSubmit = (e) => {
     e.preventDefault();
     onAddParticipant({
@@ -32,12 +35,13 @@ const ParticipantsControl = ({
       healthStatus,
       enrollmentDate: getTodayDateString(),
     });
-    setConsent(false); // Reset form
+    setConsent(false);
     setAge('');
     setGender('Male');
     setHealthStatus('Healthy');
   };
 
+  // Submits the updated recruitment goal.
   const handleGoalSubmit = (e) => {
     e.preventDefault();
     if (!goalInput) return;

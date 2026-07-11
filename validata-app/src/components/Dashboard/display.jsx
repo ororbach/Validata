@@ -9,6 +9,9 @@ import UserManagement from '../UserManagement/control';
 import StudyManagement from '../StudyManagement/control';
 import Toast from '../Toast/control';
 
+// This file defines the main display component of the dashboard and system navigation.
+
+// This function renders the dashboard view based on user status and current view.
 export default function DashboardDisplay({
   isLoading,
   userStatus,
@@ -40,8 +43,8 @@ export default function DashboardDisplay({
   handleAddStudy,
   handleDeleteStudy
 }) {
-// Loading Screen
   if (isLoading) {
+    // Loading State
     return (
       <div className="flex h-dvh w-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
         <div className="flex flex-col items-center gap-4">
@@ -52,8 +55,8 @@ export default function DashboardDisplay({
     );
   }
 
-  // Pending Approval State Layout
   if (userStatus === 'pending') {
+    // Pending Mentor Approval State
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 p-6 relative overflow-hidden font-sans">
         <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-500/10 blur-[150px]" />
@@ -77,8 +80,8 @@ export default function DashboardDisplay({
     );
   }
 
-  // Suspended Account State Layout
   if (userStatus === 'suspended') {
+    // Suspended User State
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 p-6 relative overflow-hidden font-sans">
         <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-rose-500/10 blur-[150px]" />
@@ -102,9 +105,10 @@ export default function DashboardDisplay({
     );
   }
 
-  // Active Dashboard Layout
+  // Main Dashboard UI
   return (
     <div className="bg-slate-50 dark:bg-slate-950 flex h-dvh overflow-hidden text-slate-800 dark:text-slate-100">
+      {/* Sidebar Navigation */}
       <Sidebar
         currentView={currentView}
         onNavigate={setCurrentView}
@@ -117,17 +121,18 @@ export default function DashboardDisplay({
       />
 
       {/* Main Content Area */}
-      {/* relative (not overflow) here so absolutely-positioned overlays (e.g. AIChat) anchor
-          to this box without disturbing the inner content's scroll position. */}
       <main className="flex-1 relative flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 pt-12 md:pt-0">
         <div className="flex-1 overflow-y-auto flex flex-col">
+          {/* Toast Notification */}
           <Toast
             message={toastMessage}
             show={showToast}
             onHide={() => setShowToast(false)}
           />
 
+          {/* Current View Rendering */}
           <div className="p-4 pb-20 md:p-8 max-w-6xl mx-auto w-full flex-grow">
+          {/* Participants View */}
           {currentView === 'participants' && (
             <Participants
               participants={participants}
@@ -140,12 +145,14 @@ export default function DashboardDisplay({
             />
           )}
 
+          {/* Participants Read-Only View */}
           {currentView === 'participantsView' && (
             <ParticipantsView
               participants={participants}
             />
           )}
 
+          {/* Data Collection View */}
           {currentView === 'data' && (
             <DataCollection
               participants={participants}
@@ -157,6 +164,7 @@ export default function DashboardDisplay({
             />
           )}
 
+          {/* Analysis View */}
           {currentView === 'analysis' && (
             <Analysis
               participants={participants}
@@ -165,16 +173,19 @@ export default function DashboardDisplay({
             />
           )}
 
+          {/* Results View */}
           {currentView === 'results' && (
             <Results participants={participants} measurements={measurements} onMarkInvalid={handleMarkMeasurementInvalid} />
           )}
 
+          {/* User Management View */}
           {currentView === 'userManagement' && userRole === 'mentor' && (
             <UserManagement
               currentUserEmail={currentUserEmail}
             />
           )}
 
+          {/* Study Management View */}
           {currentView === 'studyManagement' && userRole === 'mentor' && (
             <StudyManagement
               studies={studies}

@@ -35,56 +35,53 @@ import {
 
 import DashboardDisplay from "./display";
 
+// This file defines the dashboard control component, managing the main state of the system.
+
+// This function renders the dashboard control component.
 export default function DashboardControl() {
   const router = useRouter();
 
-  // Dashboard views
   const [currentView, setCurrentView] = useState('participants');
 
-  // App data
   const [participants, setParticipants] = useState([]);
   const [measurements, setMeasurements] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Studies (multi-study support: each study has its own participants/measurements/goal)
   const [studies, setStudies] = useState([]);
   const [currentStudyId, setCurrentStudyId] = useState(null);
   const currentStudy = studies.find((s) => s.id === currentStudyId) || null;
 
-  // Remembers the last-viewed study across reloads, same as the sidebar's
-  // expanded/collapsed state. Falls back to the first study if the saved id
-  // no longer matches one of the fetched studies (e.g. it was deleted).
+  // This function retrieves the saved study ID from local storage.
   const getSavedStudyId = () => {
     if (typeof window === 'undefined') return null;
     return window.localStorage.getItem('validata-current-study-id');
   };
 
   useEffect(() => {
+    // Save study
     if (typeof window !== 'undefined' && currentStudyId) {
       window.localStorage.setItem('validata-current-study-id', currentStudyId);
     }
   }, [currentStudyId]);
 
-  // User auth profile details
   const [userRole, setUserRole] = useState('team_member');
   const [userStatus, setUserStatus] = useState('pending');
   const [currentUserEmail, setCurrentUserEmail] = useState('');
 
-  // Toast state
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // File import states
   const [isImporting, setIsImporting] = useState(false);
   const [importSummary, setImportSummary] = useState(null);
 
+  // This function triggers a toast notification with a custom message.
   const triggerToast = (message) => {
     setToastMessage(message);
     setShowToast(true);
   };
 
+  // This function logs the user out and clears cookies.
   const handleLogout = async () => {
-    // Clear cookies
     deleteCookie('sb-access-token');
     deleteCookie('user-role');
     deleteCookie('user-status');
@@ -99,8 +96,7 @@ export default function DashboardControl() {
     router.refresh();
   };
 
-  // Fetches participants + measurements for one study, mapping DB shapes
-  // to the frontend's expected camelCase records.
+  // This function fetches participant and measurement data for a specific study.
   const loadDataForStudy = async (studyId) => {
     const resP = await fetch(`/api/participants?study_id=${studyId}`);
     if (!resP.ok) throw new Error('Failed to fetch participants');
@@ -112,7 +108,6 @@ export default function DashboardControl() {
     const mData = await resM.json();
     if (mData.error) throw new Error(mData.error);
 
-    // Map database records to frontend expected camelCase formats
     const mappedParticipants = pData.map(p => ({
       id: p.id,
       consent: p.consent,
@@ -135,7 +130,6 @@ export default function DashboardControl() {
         formattedDate = `${day}/${month}/${year} ${hours}:${minutes}`;
       } catch { }
 
-      // Look up enrollment date from participants
       const participantRecord = mappedParticipants.find(p => p.id === m.participant_id);
       const enrollmentDate = participantRecord?.enrollmentDate || null;
 
@@ -156,6 +150,7 @@ export default function DashboardControl() {
     setMeasurements(mappedMeasurements);
   };
 
+  // This function updates the current study and loads its data.
   const handleSwitchStudy = async (studyId) => {
     setCurrentStudyId(studyId);
     setIsLoading(true);
@@ -169,6 +164,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function creates a new study in the database.
   const handleAddStudy = async (name, goal) => {
     const recruitmentGoal = parseInt(goal) || 50;
 
@@ -193,6 +189,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function deletes an existing study and its data.
   const handleDeleteStudy = async (id) => {
     const study = studies.find((s) => s.id === id);
     if (!study) return;
@@ -223,6 +220,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function updates the recruitment goal of the current study.
   const handleUpdateRecruitmentGoal = async (newGoal) => {
     const goal = parseInt(newGoal);
     if (isNaN(goal) || goal < 1) {
@@ -248,8 +246,8 @@ export default function DashboardControl() {
     }
   };
 
-  // Check Auth & Fetch Data on Mount
   useEffect(() => {
+    // This function initializes user data and fetches initial data.
     const initializeAuthAndData = async () => {
       setIsLoading(true);
 
@@ -270,7 +268,6 @@ export default function DashboardControl() {
 
         email = user.email;
 
-        // Fetch profile details
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('*')
@@ -284,7 +281,6 @@ export default function DashboardControl() {
         } else {
           role = profile.role;
           status = profile.status;
-          // Update cookies to keep in sync with database updates
           setCookie('user-role', role, 7);
           setCookie('user-status', status, 7);
         }
@@ -298,13 +294,11 @@ export default function DashboardControl() {
       setUserRole(role);
       setUserStatus(status);
 
-      // If account status is not active, stop here and do not load dashboard data
       if (status !== 'active') {
         setIsLoading(false);
         return;
       }
 
-      // Fetch Studies, then this study's participants/measurements (Only if Active)
       try {
         const resStudies = await fetch('/api/studies');
         if (!resStudies.ok) throw new Error('Failed to fetch studies');
@@ -331,7 +325,7 @@ export default function DashboardControl() {
     initializeAuthAndData();
   }, []);
 
-  // Participant Handlers
+  // This function adds a new participant to the current study.
   const handleAddParticipant = async ({ consent, age, gender, healthStatus, enrollmentDate }) => {
     if (!currentStudyId) {
       triggerToast('Select or create a study before adding participants.');
@@ -382,6 +376,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function marks a participant as dropped and invalidates their measurements.
   const handleDropParticipant = async (id) => {
     if (window.confirm(`This will permanently drop participant ${id} from the study and mark all of their measurements as invalid. This cannot be undone. Continue?`)) {
       try {
@@ -421,6 +416,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function toggles the participant's status between active and completed.
   const handleToggleParticipantCompleted = async (id) => {
     const participant = participants.find((p) => p.id === id);
     if (!participant) return;
@@ -447,7 +443,7 @@ export default function DashboardControl() {
     }
   };
 
-  // Measurement Handlers
+  // This function saves a new measurement to the database.
   const handleLogMeasurement = async ({ participantId, goniometer, aiModel, notes, testDate }) => {
     if (!currentStudyId) {
       triggerToast('Select or create a study before logging a measurement.');
@@ -484,7 +480,6 @@ export default function DashboardControl() {
       }
 
       const savedData = await res.json();
-      // Look up participant's enrollment date
       const participantRecord = participants.find(p => p.id === savedData.participant_id);
       const enrollmentDate = participantRecord?.enrollmentDate || null;
 
@@ -508,6 +503,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function marks a measurement as invalid.
   const handleMarkMeasurementInvalid = async (id) => {
     try {
       const res = await fetch('/api/measurements', {
@@ -529,6 +525,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function parses a CSV formatted text into an array of objects.
   const parseCSV = (text) => {
     const lines = [];
     let row = [""];
@@ -538,7 +535,7 @@ export default function DashboardControl() {
       const c = text[i];
       const next = text[i+1];
       if (c === '"') {
-        if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; } // Escaped quote
+        if (inQuotes && next === '"') { row[row.length - 1] += '"'; i++; }
         else { inQuotes = !inQuotes; }
       } else if (c === ',' && !inQuotes) {
         row.push("");
@@ -562,13 +559,13 @@ export default function DashboardControl() {
     });
   };
 
+  // This function processes imported rows and saves them as new measurements.
   const processImportedRows = async (rows) => {
     let successCount = 0;
     let errorCount = 0;
     const errors = [];
     const newMeasurements = [];
 
-    // Map active participants for easy case-insensitive lookup
     const activeParticipantIds = new Set(
       participants
         .filter(p => p.status.toLowerCase() === 'active')
@@ -578,7 +575,6 @@ export default function DashboardControl() {
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
 
-      // Try different common keys for flexibility
       const pId = (row.participant_id || row.participant || row.participantid || row.participantId || '').toString().trim();
       const goniometerRaw = row.goniometer;
       const aiModelRaw = row.ai_model || row.aiModel || row.aimodel || row.ai_ml || row.aiml;
@@ -657,13 +653,13 @@ export default function DashboardControl() {
     }
 
     if (newMeasurements.length > 0) {
-      // Reverse array to ensure newest IDs are prepended first, maintaining descending order
       setMeasurements(prev => [...newMeasurements.reverse(), ...prev]);
     }
 
     return { successCount, errorCount, errors };
   };
 
+  // This function handles data file upload and parses its content.
   const handleFileUpload = async (file) => {
     setIsImporting(true);
     setImportSummary(null);
@@ -724,6 +720,7 @@ export default function DashboardControl() {
     }
   };
 
+  // This function starts the PDF report generation process.
   const handleGenerateReport = () => {
     triggerToast('Preparing PDF report... Download will begin shortly.');
   };

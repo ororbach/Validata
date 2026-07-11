@@ -1,7 +1,11 @@
+// This service provides utility functions for the results view.
+
+// Formats a date value for user-friendly display.
 export const formatDateForDisplay = (value) => {
   if (!value) return '—';
 
   const parsedDate = new Date(value);
+  // Validate date
   if (Number.isNaN(parsedDate.getTime())) {
     return value;
   }
@@ -13,8 +17,10 @@ export const formatDateForDisplay = (value) => {
   return `${day}/${month}/${year}`;
 };
 
+// Sorts an array of measurements in descending order by timestamp or ID.
 export const sortMeasurementsDescending = (measurements) => {
   return [...measurements].sort((a, b) => {
+    // Parse time
     const parseDate = (dateStr) => {
       try {
         const [datePart, timePart] = dateStr.split(' ');

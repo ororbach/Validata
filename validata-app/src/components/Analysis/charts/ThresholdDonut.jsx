@@ -1,6 +1,7 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { COLORS, CHART_HEIGHT } from '../chartConfig';
 
+// This component renders a custom tooltip for the donut chart segments.
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const { name, value } = payload[0];
@@ -12,7 +13,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-// Pass/fail donut — threshold in degrees determines what counts as clinically acceptable
+// This component displays a donut chart indicating the proportion of measurements passing an error threshold.
 const ThresholdDonut = ({ data, threshold = 5 }) => {
   if (!data || data.pass === undefined) return null;
 
@@ -41,7 +42,6 @@ const ThresholdDonut = ({ data, threshold = 5 }) => {
           <Tooltip content={<CustomTooltip />} />
         </PieChart>
       </ResponsiveContainer>
-      {/* Center label — shows percentage, threshold, and raw counts */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="text-center">
           <p className="text-3xl font-bold text-slate-800 dark:text-slate-100">{percentage.toFixed(1)}%</p>

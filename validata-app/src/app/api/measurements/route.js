@@ -1,3 +1,4 @@
+// This router file manages measurement-related requests, including retrieval, addition, and updates.
 export const runtime = 'edge';
 
 import { verifySession } from '@/lib/auth-server';
@@ -8,6 +9,7 @@ import {
   toggleMeasurementValidity
 } from '@/services/measurementsService';
 
+// This function handles GET requests to retrieve measurements for a specific study.
 export async function GET(request) {
   try {
     const session = await verifySession();
@@ -25,6 +27,7 @@ export async function GET(request) {
   }
 }
 
+// This function processes POST requests to add a new measurement or perform data analysis.
 export async function POST(request) {
   try {
     const session = await verifySession();
@@ -33,10 +36,12 @@ export async function POST(request) {
     const body = await request.json();
 
     if (body.type === 'analysis') {
+      // Perform analysis.
       const result = calculateAnalysis(session, body);
       return Response.json(result.data);
     }
 
+    // Add measurement.
     const result = await addMeasurement(session, body);
     if (result.error) return Response.json({ error: result.error }, { status: result.status });
 
@@ -46,6 +51,7 @@ export async function POST(request) {
   }
 }
 
+// This function manages PATCH requests to update the validity status of a measurement.
 export async function PATCH(request) {
   try {
     const session = await verifySession();

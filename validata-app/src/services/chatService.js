@@ -1,7 +1,9 @@
+// This service manages the interaction with the AI model for the chat feature.
 import { streamText } from 'ai';
 import { google } from '@ai-sdk/google';
 import { z } from 'zod';
 
+// Generates a continuous stream of AI responses based on the provided context and messages.
 export async function generateChatStream(messages, dataContext) {
   const systemPrompt = `You are a professional Data Analyst for Validata, a clinical trials portal.
 You have access to the currently loaded participants and measurements data for the active session.
@@ -11,6 +13,7 @@ Be concise, accurate, and professional.
 Current context data:
 ${JSON.stringify(dataContext)}`;
 
+  // Initialize model
   const result = await streamText({
     model: google('models/gemini-2.5-flash', {
       useSearchGrounding: false,
@@ -27,8 +30,8 @@ ${JSON.stringify(dataContext)}`;
           dataKeys: z.array(z.string()).describe('The keys in the data objects that hold the numeric values to be plotted on the Y-axis. Example: ["goniometer", "aiModel"]'),
           xAxisKey: z.string().describe('The key in the data objects that holds the labels for the X-axis. Example: "name"'),
         }),
+        // Execute tool
         execute: async ({ chartType, title, data, dataKeys, xAxisKey }) => {
-          // The frontend will intercept this tool call and render the graph.
           return { chartType, title, data, dataKeys, xAxisKey, status: "Chart generated and sent to user." };
         },
       },

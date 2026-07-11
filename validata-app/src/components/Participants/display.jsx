@@ -1,4 +1,7 @@
+// This component renders the UI for managing and tracking study participants.
 import { CheckCircle2, XCircle, Search, HelpCircle } from 'lucide-react';
+
+// Displays the participant registration form, tracking table, and recruitment progress.
 const ParticipantsDisplay = ({
   participants,
   consent,
@@ -22,13 +25,14 @@ const ParticipantsDisplay = ({
   const goalPercent = recruitmentGoal
     ? Math.min(100, Math.round((recruitedCount / recruitmentGoal) * 100))
     : 0;
-  // Dropped participants count toward neither side of this ratio - they were
-  // never recruited to completion, same reasoning as the recruitment widget.
+
   const nonDroppedParticipants = participants.filter((p) => String(p.status || '').toLowerCase() !== 'dropped');
   const completedCount = nonDroppedParticipants.filter((p) => String(p.status || '').toLowerCase() === 'completed').length;
 
+  // Main Participants Management UI
   return (
     <section className="app-section">
+      {/* Section Header */}
       <header className="mb-8">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Participant Management</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -36,9 +40,10 @@ const ParticipantsDisplay = ({
         </p>
       </header>
 
-      {/* Recruitment Progress */}
+      {/* Recruitment Progress Banner */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          {/* Progress Status Text */}
           <div>
             <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Recruitment Progress</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -50,6 +55,7 @@ const ParticipantsDisplay = ({
 
           {isMentor && (
             <form onSubmit={onGoalSubmit} className="flex items-center gap-2">
+              {/* Recruitment Goal Form (Mentor Only) */}
               <input
                 type="number"
                 min="1"
@@ -70,6 +76,7 @@ const ParticipantsDisplay = ({
 
         {recruitmentGoal && (
           <div className="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            {/* Progress Bar */}
             <div
               className="bg-blue-600 h-2.5 rounded-full transition-all"
               style={{ width: `${goalPercent}%` }}
@@ -78,13 +85,16 @@ const ParticipantsDisplay = ({
         )}
       </div>
 
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Registration Form */}
+        {/* Register New Participant Form Area */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
           <h3 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">
             Register New Participant
           </h3>
+          {/* Registration Form */}
           <form onSubmit={onSubmit} className="space-y-4">
+            {/* Privacy Notice Banner */}
             <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg border border-slate-200 dark:border-slate-700 mb-2">
               <p className="text-sm text-slate-600 dark:text-slate-300">
                 The system will automatically generate a unique, anonymous ID for the new participant to ensure privacy.
@@ -108,7 +118,7 @@ const ParticipantsDisplay = ({
               />
             </div>
 
-            {/* Gender Select */}
+            {/* Gender Selection */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Gender
@@ -124,7 +134,7 @@ const ParticipantsDisplay = ({
               </select>
             </div>
 
-            {/* Health Status Select */}
+            {/* Health Status Selection */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Health Status
@@ -140,7 +150,7 @@ const ParticipantsDisplay = ({
               </select>
             </div>
 
-            {/* Consent Management */}
+            {/* Informed Consent Checkbox */}
             <div className="bg-blue-50 dark:bg-blue-950/40 p-4 rounded-lg border border-blue-100 dark:border-blue-900 mt-2">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -156,6 +166,7 @@ const ParticipantsDisplay = ({
               </label>
             </div>
 
+            {/* Submit Button */}
             <button
               type="submit"
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors"
@@ -165,8 +176,9 @@ const ParticipantsDisplay = ({
           </form>
         </div>
 
-        {/* Tracking Table */}
+        {/* Active Participants Tracking Area */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+          {/* Tracking Area Header */}
           <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-4">
             <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">Active Participants Tracking</h3>
             <div className="flex items-center gap-2">
@@ -178,8 +190,8 @@ const ParticipantsDisplay = ({
               </span>
             </div>
           </div>
-          {/* Mobile cards — replaces the table below md, where horizontal
-              scrolling a 4-column table is uncomfortable */}
+          
+          {/* Mobile View Participant List */}
           <div className="md:hidden space-y-3">
             {participants.length === 0 && (
               <p className="text-center py-6 text-slate-500 dark:text-slate-400">No participants found.</p>
@@ -210,10 +222,6 @@ const ParticipantsDisplay = ({
                     <span className="text-slate-500 dark:text-slate-400">Enrolled: {p.enrollmentDateDisplay || '—'}</span>
                   </div>
                   {normalizedStatus !== 'dropped' && (
-                    // The permanence warning is carried by
-                    // the confirm() dialog instead (see handleDropParticipant).
-                    // Fixed-width pills so "Mark Complete"/"Mark Not Completed"
-                    // toggling doesn't shift the Drop button's position.
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => onToggleCompleted(p.id)}
@@ -238,8 +246,10 @@ const ParticipantsDisplay = ({
             })}
           </div>
 
+          {/* Desktop View Participant Table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
+              {/* Table Header */}
               <thead>
                 <tr className="text-slate-500 dark:text-slate-400 text-sm border-b border-slate-200 dark:border-slate-800">
                   <th className="py-3 px-2 font-medium">System ID</th>
@@ -272,6 +282,7 @@ const ParticipantsDisplay = ({
                   </th>
                 </tr>
               </thead>
+              {/* Table Body */}
               <tbody>
                 {participants.map((p) => {
                   const normalizedStatus = String(p.status || '').toLowerCase();

@@ -1,5 +1,8 @@
+// This service is responsible for managing user profiles and access roles within the system.
+
+// Retrieves user profiles, either fetching only the current user or all profiles for mentors.
 export async function getProfiles(session, fetchCurrentOnly) {
-  // 1. Fetch current user's profile
+  // Fetch profiles
   if (fetchCurrentOnly) {
     const { data: profile, error } = await session.supabaseClient
       .from('profiles')
@@ -8,7 +11,6 @@ export async function getProfiles(session, fetchCurrentOnly) {
       .single();
 
     if (error) {
-      // If profile doesn't exist, try to create it
       const { data: newProfile, error: createError } = await session.supabaseClient
         .from('profiles')
         .insert({
@@ -27,7 +29,6 @@ export async function getProfiles(session, fetchCurrentOnly) {
     return { data: profile };
   }
 
-  // 2. Fetch all profiles (Mentors only)
   if (session.profile.role !== 'mentor') {
     return { error: 'Forbidden. Mentors only.', status: 403 };
   }
@@ -41,6 +42,7 @@ export async function getProfiles(session, fetchCurrentOnly) {
   return { data: profiles };
 }
 
+// Updates the details of an existing user profile, restricted to mentor roles.
 export async function updateProfile(session, body) {
   if (session.profile.role !== 'mentor') {
     return { error: 'Forbidden. Mentors only.', status: 403 };
@@ -48,6 +50,7 @@ export async function updateProfile(session, body) {
 
   const { id, role, status } = body;
 
+  // Update data
   const updates = {};
   if (role !== undefined) updates.role = role;
   if (status !== undefined) updates.status = status;
@@ -62,6 +65,7 @@ export async function updateProfile(session, body) {
   return { data: data[0] };
 }
 
+// Deletes a user profile from the database, restricted to mentor roles.
 export async function deleteProfile(session, id) {
   if (session.profile.role !== 'mentor') {
     return { error: 'Forbidden. Mentors only.', status: 403 };
@@ -71,6 +75,7 @@ export async function deleteProfile(session, id) {
     return { error: 'Missing user ID', status: 400 };
   }
 
+  // Delete profile
   const { error } = await session.supabaseClient
     .from('profiles')
     .delete()

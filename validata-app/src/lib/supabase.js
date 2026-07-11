@@ -1,3 +1,4 @@
+// This service file initializes and exports the Supabase client instance for database connection.
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
@@ -12,4 +13,3 @@ const urlToUse = isValidUrl ? supabaseUrl : 'https://placeholder.supabase.co';
 const keyToUse = supabaseAnonKey || 'placeholder-key';
 
 export const supabase = createClient(urlToUse, keyToUse);
-

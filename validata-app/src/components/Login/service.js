@@ -1,6 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import { setCookie } from '@/lib/cookies';
 
+// This file contains service functions for login and registration with the server.
+
+// This function performs the login process with the database server and saves the cookies.
 export const signInWithSupabase = async (email, password) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -11,7 +14,6 @@ export const signInWithSupabase = async (email, password) => {
   const session = data.session;
   if (!session) throw new Error('Could not establish session.');
 
-  // Get profile details to read role and status
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('*')
@@ -22,7 +24,7 @@ export const signInWithSupabase = async (email, password) => {
   let status = 'pending';
 
   if (profileError || !profile) {
-    // Profile not created yet, insert it
+    // Create profile
     const { data: newProfile, error: createError } = await supabase
       .from('profiles')
       .insert({
@@ -43,7 +45,6 @@ export const signInWithSupabase = async (email, password) => {
     status = profile.status;
   }
 
-  // Save session tokens and profile state in cookies
   setCookie('sb-access-token', session.access_token, 7);
   setCookie('user-role', role, 7);
   setCookie('user-status', status, 7);
@@ -51,6 +52,7 @@ export const signInWithSupabase = async (email, password) => {
   return { success: true };
 };
 
+// This function performs the registration process and creates a new user in the system.
 export const signUpWithSupabase = async (email, password) => {
   const { data, error } = await supabase.auth.signUp({
     email,

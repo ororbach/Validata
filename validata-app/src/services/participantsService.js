@@ -1,3 +1,6 @@
+// This service handles all operations related to managing study participants in the database.
+
+// Retrieves a list of participants, optionally filtered by a specific study ID.
 export async function getParticipants(session, studyId) {
   let query = session.supabaseClient
     .from('participants')
@@ -11,6 +14,7 @@ export async function getParticipants(session, studyId) {
   return { data };
 }
 
+// Adds a new participant to the database for a specific study.
 export async function addParticipant(session, body) {
   const { id, consent, status, age, gender, healthStatus, enrollmentDate, studyId } = body;
 
@@ -18,6 +22,7 @@ export async function addParticipant(session, body) {
     return { error: 'A study must be selected before adding a participant.', status: 400 };
   }
 
+  // Create participant
   const { data, error } = await session.supabaseClient
     .from('participants')
     .insert({
@@ -36,6 +41,7 @@ export async function addParticipant(session, body) {
   return { data: data[0] };
 }
 
+// Updates the current status of an existing participant in a study.
 export async function updateParticipantStatus(session, body) {
   const { id, status, studyId } = body;
 
@@ -43,6 +49,7 @@ export async function updateParticipantStatus(session, body) {
     return { error: 'A study must be selected before updating a participant.', status: 400 };
   }
 
+  // Update status
   const { data, error } = await session.supabaseClient
     .from('participants')
     .update({ status })

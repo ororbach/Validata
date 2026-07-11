@@ -1,3 +1,4 @@
+// This service provides functions for managing and analyzing measurement data.
 import {
   normalizeRecord,
   aggregateByParticipant,
@@ -14,6 +15,7 @@ import {
   generateAnalysisText
 } from './statistics';
 
+// Fetches all measurements for a specific study or across all studies.
 export async function getMeasurements(session, studyId) {
   let query = session.supabaseClient
     .from('measurements')
@@ -27,7 +29,9 @@ export async function getMeasurements(session, studyId) {
   return { data };
 }
 
+// Performs a comprehensive statistical analysis on the provided measurement data.
 export function calculateAnalysis(session, body) {
+  // Process data
   const threshold = parseFloat(body.threshold) || 5;
   const rawMeasurements = body.measurements || [];
   const participants = body.participants || [];
@@ -67,6 +71,7 @@ export function calculateAnalysis(session, body) {
   };
 }
 
+// Adds a new measurement record to the database for a specific participant.
 export async function addMeasurement(session, body) {
   const { participantId, goniometer, aiModel, notes, testDate, studyId } = body;
 
@@ -77,6 +82,7 @@ export async function addMeasurement(session, body) {
   const parsedGoniometer = parseFloat(goniometer.toString().replace('°', '')) || 0.0;
   const parsedAiModel = parseFloat(aiModel.toString().replace('°', '')) || 0.0;
 
+  // Save measurement
   const { data, error } = await session.supabaseClient
     .from('measurements')
     .insert({
@@ -94,9 +100,11 @@ export async function addMeasurement(session, body) {
   return { data: data[0] };
 }
 
+// Updates the validity status of a specific measurement or all measurements for a participant.
 export async function toggleMeasurementValidity(session, body) {
   const { id, isValid, participantId, studyId } = body;
 
+  // Update validity
   if (participantId) {
     if (!studyId) {
       return { error: 'A study must be selected before updating measurements.', status: 400 };

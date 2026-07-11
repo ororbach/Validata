@@ -1,5 +1,7 @@
+// This component displays the detailed list and statistics of participants.
 import { Users, Heart, ShieldAlert, Activity } from 'lucide-react';
 
+// Renders demographic statistics and a searchable list of participant details.
 const ParticipantsViewDisplay = ({
   participants,
   searchTerm,
@@ -10,6 +12,7 @@ const ParticipantsViewDisplay = ({
 }) => {
   return (
     <section className="app-section">
+      {/* Header Section */}
       <header className="mb-8">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Participants List & Details</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -17,7 +20,7 @@ const ParticipantsViewDisplay = ({
         </p>
       </header>
 
-      {/* Stats Cards */}
+      {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex items-center gap-4">
           <div className="p-3 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-300 rounded-lg">
@@ -50,9 +53,9 @@ const ParticipantsViewDisplay = ({
         </div>
       </div>
 
-      {/* Filter and Table Container */}
+      {/* Main Content Area */}
       <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        {/* Table Filters */}
+        {/* Search and Filters */}
         <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="w-full sm:w-72">
             <input
@@ -78,7 +81,7 @@ const ParticipantsViewDisplay = ({
           </div>
         </div>
 
-        {/* Mobile cards — replaces the table below md */}
+        {/* Mobile View List */}
         <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
           {participants.length === 0 ? (
             <p className="text-center py-10 text-slate-500 dark:text-slate-400">No participants match the criteria</p>
@@ -111,7 +114,7 @@ const ParticipantsViewDisplay = ({
           )}
         </div>
 
-        {/* Participants Table */}
+        {/* Desktop View Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

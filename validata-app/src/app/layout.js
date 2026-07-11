@@ -1,3 +1,4 @@
+// This component acts as the main wrapper for the application, including global design settings.
 import "./globals.css";
 import { ThemeProvider } from "../context/ThemeContext";
 
@@ -19,6 +20,7 @@ export const viewport = {
   initialScale: 1,
 };
 
+// This function defines the HTML structure and body for all application pages.
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className="h-full antialiased" suppressHydrationWarning>

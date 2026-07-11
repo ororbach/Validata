@@ -1,5 +1,6 @@
+// This component renders the visual representation of a toast notification.
 
-// Pure presentational component
+// Renders the toast UI element with the appropriate animation and message content.
 const ToastDisplay = ({ message, show }) => {
   return (
     <div
@@ -7,6 +8,7 @@ const ToastDisplay = ({ message, show }) => {
         show ? 'opacity-100' : 'opacity-0 pointer-events-none'
       }`}
     >
+      {/* Toast Message */}
       {message}
     </div>
   );

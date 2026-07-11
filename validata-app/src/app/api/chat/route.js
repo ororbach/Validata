@@ -1,8 +1,9 @@
+// This router file handles AI chat requests.
 import { generateChatStream } from '@/services/chatService';
 
-// Allow streaming responses up to 30 seconds
 export const maxDuration = 60;
 
+// This function processes POST requests and returns a streamed chat response.
 export async function POST(req) {
   try {
     const { messages, dataContext } = await req.json();

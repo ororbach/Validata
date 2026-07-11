@@ -2,20 +2,24 @@ import { useState } from 'react';
 import StudyManagementDisplay from './display';
 import { validateStudyCreation, validateStudyDeletion } from './service';
 
+// This component controls the logic for managing studies.
 const StudyManagementControl = ({ studies, currentStudyId, onAddStudy, onDeleteStudy }) => {
   const [newStudyName, setNewStudyName] = useState('');
   const [newStudyGoal, setNewStudyGoal] = useState('');
 
+  // Handles the creation of a new study.
   const handleCreateStudy = (e) => {
     e.preventDefault();
     const result = validateStudyCreation(newStudyName, newStudyGoal);
     if (result.error) return;
     
+    // Create study
     onAddStudy(result.name, result.goal);
     setNewStudyName('');
     setNewStudyGoal('');
   };
 
+  // Handles the deletion of an existing study.
   const handleDeleteStudy = (id) => {
     const result = validateStudyDeletion(id, studies);
     
@@ -26,6 +30,7 @@ const StudyManagementControl = ({ studies, currentStudyId, onAddStudy, onDeleteS
       return;
     }
 
+    // Delete study
     if (window.confirm(`Delete study "${result.study.name}"? This permanently deletes all of its participants and measurements. This cannot be undone.`)) {
       onDeleteStudy(id);
     }

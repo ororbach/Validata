@@ -6,6 +6,9 @@ import LoginDisplay from './display';
 import { signInWithSupabase, signUpWithSupabase } from './service';
 import { deleteCookie } from '@/lib/cookies';
 
+// This file defines the control component for the login and registration screen.
+
+// This function renders and manages the logic of the login and registration screen.
 export default function LoginControl() {
   const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
@@ -17,12 +20,13 @@ export default function LoginControl() {
   const [successMessage, setSuccessMessage] = useState('');
   
   useEffect(() => {
-    // Clear any leftover tokens when landing on login page
+    // Clear cookies
     deleteCookie('sb-access-token');
     deleteCookie('user-role');
     deleteCookie('user-status');
   }, []);
 
+  // This function handles submitting the login or registration form to the system.
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -36,7 +40,7 @@ export default function LoginControl() {
 
     try {
       if (isLogin) {
-        // 1. Sign In
+        // Login
         await signInWithSupabase(email, password);
         setSuccessMessage('Logged in successfully!');
         
@@ -46,7 +50,7 @@ export default function LoginControl() {
         }, 1000);
 
       } else {
-        // 2. Sign Up
+        // Register
         await signUpWithSupabase(email, password);
         setSuccessMessage('Registration successful! Please check your email for confirmation, then log in. (Your account will require mentor approval before full access)');
         setIsLogin(true);

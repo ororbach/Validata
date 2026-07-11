@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserCheck, Shield, Trash2, ShieldAlert, AlertCircle, RefreshCw, UserMinus } from 'lucide-react';
 
+// This component displays the user interface for system user access control.
 const UserManagementDisplay = ({
   users,
   isLoading,
@@ -13,8 +14,7 @@ const UserManagementDisplay = ({
 }) => {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden font-sans">
-
-      {/* Header */}
+      {/* Header with Refresh Button */}
       <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">User Access Control</h2>
@@ -31,7 +31,7 @@ const UserManagementDisplay = ({
         </button>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content Area */}
       <div className="p-6">
         
         {/* Error State */}
@@ -45,7 +45,7 @@ const UserManagementDisplay = ({
           </div>
         )}
 
-        {/* Loading Spinner */}
+        {/* Loading State */}
         {isLoading ? (
           <div className="py-20 flex flex-col items-center justify-center gap-3">
             <div className="h-9 w-9 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div>
@@ -53,12 +53,14 @@ const UserManagementDisplay = ({
           </div>
         ) : users.length === 0 ? (
           <div className="py-20 text-center">
+            {/* Empty State */}
             <ShieldAlert className="h-12 w-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />
             <p className="text-slate-600 dark:text-slate-300 font-semibold text-lg">No profiles found</p>
             <p className="text-slate-400 dark:text-slate-500 text-sm mt-1">No other users have registered on this platform yet.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
+            {/* Users Table */}
             <table className="w-full text-left border-collapse text-sm">
               <thead>
                 <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 font-medium">
@@ -73,7 +75,6 @@ const UserManagementDisplay = ({
                   const isSelf = user.email === currentUserEmail;
                   return (
                     <tr key={user.id} className="hover:bg-slate-50/40 dark:hover:bg-slate-800/60 transition-colors">
-                      {/* Email */}
                       <td className="py-4 pr-4 font-medium text-slate-800 dark:text-slate-100">
                         <div className="flex items-center gap-2.5">
                           <span className="block truncate max-w-xs">{user.email}</span>
@@ -85,7 +86,6 @@ const UserManagementDisplay = ({
                         </div>
                       </td>
 
-                      {/* Role Badge */}
                       <td className="py-4 pr-4">
                         {user.role === 'mentor' ? (
                           <span className="inline-flex items-center gap-1 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-900 text-indigo-700 dark:text-indigo-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
@@ -99,7 +99,6 @@ const UserManagementDisplay = ({
                         )}
                       </td>
 
-                      {/* Status Badge */}
                       <td className="py-4 pr-4">
                         {user.status === 'active' && (
                           <span className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs font-medium px-2.5 py-0.5 rounded-full">
@@ -118,11 +117,9 @@ const UserManagementDisplay = ({
                         )}
                       </td>
 
-                      {/* Actions */}
                       <td className="py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           
-                          {/* Approve (Pending -> Active) */}
                           {user.status === 'pending' && (
                             <button
                               onClick={() => onStatusChange(user.id, 'active')}
@@ -133,7 +130,6 @@ const UserManagementDisplay = ({
                             </button>
                           )}
 
-                          {/* Role Toggle (Mentor <-> Team Member) */}
                           {!isSelf && (
                             <button
                               onClick={() => onRoleChange(user.id, user.role === 'mentor' ? 'team_member' : 'mentor')}
@@ -144,7 +140,6 @@ const UserManagementDisplay = ({
                             </button>
                           )}
 
-                          {/* Suspend / Unsuspend */}
                           {!isSelf && user.status === 'active' && (
                             <button
                               onClick={() => onStatusChange(user.id, 'suspended')}
@@ -164,7 +159,6 @@ const UserManagementDisplay = ({
                             </button>
                           )}
 
-                          {/* Delete Account */}
                           {!isSelf && (
                             <button
                               onClick={() => onDelete(user.id)}

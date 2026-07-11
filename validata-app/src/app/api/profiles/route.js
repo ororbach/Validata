@@ -1,6 +1,8 @@
+// This router file manages operations related to user profiles in the system.
 import { verifySession } from '@/lib/auth-server';
 import { getProfiles, updateProfile, deleteProfile } from '@/services/profilesService';
 
+// This function handles GET requests to retrieve user profiles.
 export async function GET(request) {
   try {
     const session = await verifySession();
@@ -19,6 +21,7 @@ export async function GET(request) {
   }
 }
 
+// This function processes PATCH requests to update existing profile details.
 export async function PATCH(request) {
   try {
     const session = await verifySession();
@@ -36,6 +39,7 @@ export async function PATCH(request) {
   }
 }
 
+// This function manages DELETE requests to remove a user profile.
 export async function DELETE(request) {
   try {
     const session = await verifySession();

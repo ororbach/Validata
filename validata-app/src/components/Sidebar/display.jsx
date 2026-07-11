@@ -1,8 +1,8 @@
-
+// This component renders the visual interface of the navigation sidebar.
 import { LogOut, Sun, Moon, ChevronLeft, ChevronRight, FlaskConical } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 
-// Pure presentational component
+// Accepts the sidebar state properties and renders the navigation elements accordingly.
 const SidebarDisplay = ({
   currentView,
   onNavigate,
@@ -16,20 +16,20 @@ const SidebarDisplay = ({
   currentStudyId,
   onSwitchStudy
 }) => {
+  // Determine UI states based on props
   const { theme, toggleTheme } = useTheme();
   const initial = currentUserEmail ? currentUserEmail.charAt(0).toUpperCase() : 'U';
   const roleName = userRole === 'mentor' ? 'Project Mentor' : 'Team Member';
-  // Same collapse/expand toggle on every screen size: collapsed = slim icon-only rail,
-  // expanded = full labeled sidebar. Always in-flow (pushes content) — never an
-  // overlay, so there's no backdrop/shadowing of the rest of the app.
   const showLabels = isExpanded;
   const isStudyManagementActive = currentView === 'studyManagement';
 
   return (
     <>
+    {/* Desktop Sidebar */}
     <aside
       className={`hidden md:flex md:flex-col ${isExpanded ? 'w-64' : 'w-16'} bg-slate-900 text-slate-100 shadow-xl relative shrink-0 transition-[width] duration-200`}
     >
+        {/* Sidebar Header: Logo and Toggle */}
         <div className={`p-3 border-b border-slate-700 flex items-center gap-2 ${showLabels ? 'flex-row justify-between' : 'flex-col'}`}>
           <div className={`flex items-center gap-3 overflow-hidden ${showLabels ? '' : 'flex-col'}`}>
             <img src="/favicon.png" alt="Validata Logo" className="w-8 h-8 object-contain drop-shadow-md shrink-0" />
@@ -45,9 +45,7 @@ const SidebarDisplay = ({
           </button>
         </div>
 
-        {/* Study Switcher - desktop. Creating/deleting studies lives on its
-            own screen (Studies Management, linked from the bottom of this
-            sidebar for mentors) rather than inline here. */}
+        {/* Study Switcher Section */}
         <div className={`p-3 border-b border-slate-700 ${showLabels ? '' : 'flex flex-col items-center'}`}>
           {showLabels ? (
             <>
@@ -75,12 +73,13 @@ const SidebarDisplay = ({
           )}
         </div>
 
+        {/* Main Navigation Links */}
         <nav className="flex-1 p-2 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
             return (
-              <button
+               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
                 title={item.label}
@@ -96,9 +95,7 @@ const SidebarDisplay = ({
           })}
         </nav>
 
-        {/* Studies Management entry point - last item in the sidebar,
-            separate from the main nav list, mentor-only. Creating/deleting
-            studies happens on that screen, not here. */}
+        {/* Mentor Specific Navigation */}
         {userRole === 'mentor' && (
           <div className="p-2 border-t border-slate-800">
             <button
@@ -115,7 +112,7 @@ const SidebarDisplay = ({
           </div>
         )}
 
-        {/* User Session and Logout Section */}
+        {/* User Profile and Actions Footer */}
         <div className={`p-2 bg-slate-950 text-sm flex items-center gap-2 border-t border-slate-800 ${showLabels ? 'justify-between' : 'flex-col'}`}>
           <div className={`flex items-center gap-3 overflow-hidden ${showLabels ? '' : 'justify-center'}`}>
             <div className="w-10 h-10 shrink-0 rounded-full bg-slate-700 hover:bg-slate-600 transition-colors flex items-center justify-center text-slate-300 font-bold">
@@ -147,12 +144,7 @@ const SidebarDisplay = ({
         </div>
     </aside>
 
-    {/* Mobile top bar — theme/logout live here below md, so the bottom tab
-        bar can give all nav items equal width with no scrolling. Study
-        switcher is a squeezed native <select> rather than the full desktop
-        block, since the bar only has room for the logo plus a couple of
-        icon-sized controls. The Studies Management button sits right next to
-        the switcher (mentor-only) rather than in the bottom tab bar. */}
+    {/* Mobile Top Header */}
     <div className="md:hidden fixed top-0 inset-x-0 z-40 bg-slate-900 text-slate-100 border-b border-slate-700 flex items-center justify-between gap-2 px-3 py-2">
       <div className="flex items-center gap-2 min-w-0">
         <img src="/favicon.png" alt="Validata Logo" className="w-6 h-6 object-contain shrink-0" />
@@ -195,8 +187,7 @@ const SidebarDisplay = ({
       </div>
     </div>
 
-    {/* Mobile bottom tab bar — replaces the rail below md. Items split the
-        full width evenly so all of them are always visible without scrolling. */}
+    {/* Mobile Bottom Navigation */}
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-slate-900 text-slate-100 border-t border-slate-700 flex items-stretch pb-[env(safe-area-inset-bottom)]">
       {navItems.map((item) => {
         const Icon = item.icon;
@@ -218,4 +209,3 @@ const SidebarDisplay = ({
 };
 
 export default SidebarDisplay;
-

@@ -1,16 +1,16 @@
-// Service file for Participants component
-// Contains business logic separated from the UI and React state
+// This service provides utility functions for managing and formatting participant data.
 
+// Counts and returns the total number of active participants.
 export const countActiveParticipants = (participants) => {
   return participants.filter((p) => p.status === 'Active').length;
 };
 
-// "Recruited" = anyone still meaningfully part of the study (not dropped),
-// since a Completed participant was still successfully recruited.
+// Counts participants who are currently active or have successfully completed the study.
 export const countRecruitedParticipants = (participants) => {
   return participants.filter((p) => p.status === 'Active' || p.status === 'Completed').length;
 };
 
+// Returns the current date formatted as a string.
 export const getTodayDateString = (date = new Date()) => {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -18,10 +18,12 @@ export const getTodayDateString = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
+// Formats a given date string or object into a user-friendly display format.
 export const formatDateForDisplay = (value) => {
   if (!value) return '—';
 
   const parsedDate = new Date(value);
+  // Validate date
   if (Number.isNaN(parsedDate.getTime())) {
     return value;
   }

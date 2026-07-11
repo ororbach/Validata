@@ -1,9 +1,11 @@
+// This service file provides functions for server-side user authentication with Supabase.
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
+// This function creates and returns a Supabase server instance using the access token.
 export function getSupabaseServerClient(token) {
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
@@ -12,6 +14,7 @@ export function getSupabaseServerClient(token) {
   });
 }
 
+// This function verifies the current user session and checks their permissions.
 export async function verifySession() {
   const cookieStore = await cookies();
   const token = cookieStore.get('sb-access-token')?.value;
@@ -19,16 +22,13 @@ export async function verifySession() {
     return { error: 'Unauthorized. No session token found.', status: 401 };
   }
 
-  // Create an authenticated client for this server-side request context
   const supabaseServer = getSupabaseServerClient(token);
 
-  // Call Supabase API to get the user object using the access token
   const { data: { user }, error: authError } = await supabaseServer.auth.getUser();
   if (authError || !user) {
     return { error: 'Unauthorized. Invalid session token.', status: 401 };
   }
 
-  // Fetch the user's role and status from the profiles table
   const { data: profile, error: profileError } = await supabaseServer
     .from('profiles')
     .select('role, status')
@@ -36,7 +36,7 @@ export async function verifySession() {
     .single();
 
   if (profileError || !profile) {
-    // If user exists in Auth but has no profile, let's create a pending profile
+    // Create profile.
     const { data: newProfile, error: createError } = await supabaseServer
       .from('profiles')
       .insert({

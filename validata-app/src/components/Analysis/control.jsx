@@ -3,19 +3,21 @@ import AnalysisDisplay from './display';
 import AIChatControl from '../AIChat/control';
 import { fetchAnalysisData } from './service';
 
-// Controller component manages local state and fetches processed data from the API
+// This file defines the Analysis control component, managing data fetching and metric calculations.
+
+// This function renders the control component that manages state and fetches processed analysis data.
 const AnalysisControl = ({ participants, measurements, onGenerateReport, threshold = 5 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [aiResult, setAiResult] = useState(null);
   
-  // Stores the entire processed analysis payload from the server
   const [analysisData, setAnalysisData] = useState(null); 
   const [lastUpdated, setLastUpdated] = useState(null);
   const [localThreshold, setLocalThreshold] = useState(threshold);
 
-  // Fetch pre-computed charts and stats from the API
+  // This function calls the server to fetch updated analysis data whenever the threshold changes.
   useEffect(() => {
-    setAnalysisData(null); // Set to null to indicate loading
+    // Reset data
+    setAnalysisData(null); 
 
     fetchAnalysisData(localThreshold, participants, measurements)
       .then((data) => {
@@ -45,7 +47,7 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, thresho
         });
         setLastUpdated(new Date());
       });
-  }, [localThreshold]); // Re-fetch if threshold changes
+  }, [localThreshold]); 
 
   const progressOptions = useMemo(() => ({
     responsive: true,
@@ -66,11 +68,12 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, thresho
     },
   }), []);
 
+  // This function starts the simulated AI analysis process.
   const handleRunAnalysis = () => {
+    // Run analysis
     setIsAnalyzing(true);
     setAiResult(null);
 
-    // Simulate AI generation delay, then use the result from the server
     setTimeout(() => {
       setAiResult(analysisData?.aiResult || 'Analysis complete. No anomalies detected.');
       setIsAnalyzing(false);
@@ -93,7 +96,7 @@ const AnalysisControl = ({ participants, measurements, onGenerateReport, thresho
         statsData={analysisData?.statsData || []}
         summaryStats={analysisData?.summaryStats || { rmse: 0, mae: 0, meanBias: 0, passRate: 0 }}
         descriptiveStats={analysisData?.descriptiveStats || { n: 0, mean: 0, sd: 0, se: 0 }}
-        charts={analysisData?.charts} // We pass the pre-calculated charts object down
+        charts={analysisData?.charts} 
         threshold={localThreshold}
         onThresholdChange={setLocalThreshold}
         isLoadingCharts={isLoadingCharts}

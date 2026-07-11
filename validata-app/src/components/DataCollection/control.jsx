@@ -1,8 +1,9 @@
+// This component manages the state and logic for the data collection process.
 import { useState, useRef } from 'react';
 import DataCollectionDisplay from './display';
 import { getActiveParticipants, getTodayDateString } from './service';
 
-// Controller component manages local state and input references
+// Renders the data collection control interface and manages its interactions.
 const DataCollectionControl = ({ 
   participants, 
   onLogMeasurement, 
@@ -11,6 +12,7 @@ const DataCollectionControl = ({
   importSummary,
   onClearImportSummary
 }) => {
+  // Manage state
   const [participantId, setParticipantId] = useState('');
   const [goniometer, setGoniometer] = useState('');
   const [aiModel, setAiModel] = useState('');
@@ -20,14 +22,15 @@ const DataCollectionControl = ({
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
 
-  // Use service to filter participants
   const activeParticipants = getActiveParticipants(participants);
 
+  // Updates the state with the uploaded file.
   const handleFile = (file) => {
     setUploadedFile(file.name);
     onFileUpload(file);
   };
 
+  // Submits the measurement log form data.
   const handleLogSubmit = (e) => {
     e.preventDefault();
     if (!participantId) return;
@@ -40,24 +43,27 @@ const DataCollectionControl = ({
     setTestDate(getTodayDateString());
   };
 
+  // Handles the file input change event.
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
-      // Reset input so the same file can be uploaded again if needed
       e.target.value = null;
     }
   };
 
+  // Prevents the default behavior when a file is dragged over.
   const handleDragOver = (e) => {
     e.preventDefault();
     setIsDragging(true);
   };
 
+  // Handles the event when the dragged file leaves the designated area.
   const handleDragLeave = (e) => {
     e.preventDefault();
     setIsDragging(false);
   };
 
+  // Processes the file dropped into the designated area.
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
@@ -66,6 +72,7 @@ const DataCollectionControl = ({
     }
   };
 
+  // Clears the summary of the imported data.
   const handleClearSummary = () => {
     setUploadedFile(null);
     onClearImportSummary();

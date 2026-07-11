@@ -6,6 +6,7 @@ import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisT
 import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
+// This component renders a custom tooltip for the scatter plot points.
 const CustomTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
   const d = payload[0]?.payload;
@@ -23,7 +24,7 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
-// x = goniometerAngle, y = aiAngle — points on the dashed diagonal = perfect agreement
+// This component displays a scatter plot comparing AI model and goniometer angles.
 const AgreementScatter = ({ data }) => {
   const { theme } = useTheme();
   if (!data?.length) return null;
@@ -58,4 +59,3 @@ const AgreementScatter = ({ data }) => {
 };
 
 export default AgreementScatter;
-

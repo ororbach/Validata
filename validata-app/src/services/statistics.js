@@ -1,16 +1,12 @@
-// Server-side statistics and charting calculations
+// This service provides statistical tools and utility functions for complex data calculations.
 
-// -----------------------------------------------------
-// Core Statistics (formerly src/utils/statistics.js)
-// -----------------------------------------------------
-
-// Parse numeric angle from a string like "45.0°" or pass through if already a number
+// Converts a textual angle value into a numeric format.
 const parseAngle = (value) => {
   if (typeof value === 'number') return value;
   return parseFloat(String(value).replace(/[°\s]/g, '')) || 0;
 };
 
-// Normalize a raw measurement record to the { aiAngle, goniometerAngle, sessionId, date } shape.
+// Normalizes a raw measurement record into a standardized data structure.
 export const normalizeRecord = (m) => ({
   id: String(m.id || ''),
   sessionId: m.sessionId || m.participant_id || m.participant || m.participantId || '',
@@ -20,6 +16,7 @@ export const normalizeRecord = (m) => ({
   goniometerAngle: parseAngle(m.goniometerAngle ?? m.goniometer),
 });
 
+// Calculates the differences between the AI model measurements and the goniometer measurements.
 export const getDifferences = (data) =>
   data.map((d) => ({
     ...d,
@@ -27,11 +24,9 @@ export const getDifferences = (data) =>
     diff: d.aiAngle - d.goniometerAngle,
   }));
 
-// Each test involves multiple measurements per participant. Average AI and
-// goniometer readings per participant first, then every downstream
-// stat (RMSE, MAE, Bland-Altman, pass rate, histogram, trend) compares those
-// per-participant averages instead of raw individual measurements.
+// Groups and averages the measurement data based on the participant identifier.
 export const aggregateByParticipant = (data) => {
+  // Grouping data
   const groups = {};
 
   data.forEach((d) => {
@@ -61,9 +56,9 @@ export const aggregateByParticipant = (data) => {
   }));
 };
 
-// Descriptive statistics (mean, SD, SE) of the AI-goniometer error, computed
-// across participants' average errors (sample SD, n-1).
+// Computes basic descriptive statistics such as mean, standard deviation, and standard error.
 export const calculateDescriptiveStats = (data) => {
+  // Calculating metrics
   if (!data.length) return { n: 0, mean: 0, sd: 0, se: 0 };
 
   const diffs = data.map((d) => d.aiAngle - d.goniometerAngle);
@@ -78,31 +73,33 @@ export const calculateDescriptiveStats = (data) => {
   return { n, mean, sd, se };
 };
 
+// Calculates the root mean square error (RMSE) for the given dataset.
 export const calculateRMSE = (data) => {
   if (!data.length) return 0;
   const mse = data.reduce((acc, d) => acc + (d.aiAngle - d.goniometerAngle) ** 2, 0) / data.length;
   return Math.sqrt(mse);
 };
 
+// Calculates the mean absolute error (MAE) for the provided data.
 export const calculateMAE = (data) => {
   if (!data.length) return 0;
   return data.reduce((acc, d) => acc + Math.abs(d.aiAngle - d.goniometerAngle), 0) / data.length;
 };
 
+// Computes Bland-Altman statistics to compare two methods of measurement.
 export const calculateBlandAltman = (data) => {
+  // Calculating Bland-Altman
   if (!data.length) return { meanDiff: 0, upperLimit: 0, lowerLimit: 0, isNormal: true, method: 'parametric' };
   
   const diffs = data.map((d) => d.aiAngle - d.goniometerAngle);
   const n = diffs.length;
   
-  // Sort for percentiles and median
   const sortedDiffs = [...diffs].sort((a, b) => a - b);
   
   const meanDiff = diffs.reduce((a, b) => a + b, 0) / n;
   const variance = diffs.reduce((acc, d) => acc + (d - meanDiff) ** 2, 0) / n;
   const sd = Math.sqrt(variance);
   
-  // Normality test (heuristic using skewness and kurtosis)
   let m3 = 0, m4 = 0;
   diffs.forEach(d => {
       const dev = d - meanDiff;
@@ -114,8 +111,6 @@ export const calculateBlandAltman = (data) => {
   const skewness = variance > 0 ? m3 / Math.pow(variance, 1.5) : 0;
   const kurtosis = variance > 0 ? (m4 / Math.pow(variance, 2)) - 3 : 0;
   
-  // Consider normal if absolute skewness < 1 and absolute excess kurtosis < 1.5
-  // Also require at least 4 samples to make kurtosis meaningful
   const isNormal = n < 4 || (Math.abs(skewness) < 1 && Math.abs(kurtosis) < 1.5);
 
   if (isNormal) {
@@ -127,12 +122,11 @@ export const calculateBlandAltman = (data) => {
       method: 'parametric'
     };
   } else {
-    // Non-parametric limits
     const median = n % 2 === 0 
       ? (sortedDiffs[n/2 - 1] + sortedDiffs[n/2]) / 2 
       : sortedDiffs[Math.floor(n/2)];
     
-    // Percentiles 2.5 and 97.5
+    // Finding percentiles
     const getPercentile = (p) => {
         const index = p * (n - 1);
         const lower = Math.floor(index);
@@ -152,7 +146,9 @@ export const calculateBlandAltman = (data) => {
   }
 };
 
+// Segregates the differences into distinct bins to construct a histogram.
 export const binDifferences = (data, binCount = 10) => {
+  // Binning data
   if (!data.length) return [];
   const diffs = data.map((d) => d.aiAngle - d.goniometerAngle);
   const min = Math.min(...diffs);
@@ -172,6 +168,7 @@ export const binDifferences = (data, binCount = 10) => {
   return bins;
 };
 
+// Calculates the percentage of measurements that fall within an acceptable threshold.
 export const calculatePassRate = (data, threshold) => {
   if (!data.length) return { pass: 0, fail: 0, percentage: 0 };
   const pass = data.filter((d) => Math.abs(d.aiAngle - d.goniometerAngle) <= threshold).length;
@@ -179,7 +176,9 @@ export const calculatePassRate = (data, threshold) => {
   return { pass, fail, percentage: (pass / data.length) * 100 };
 };
 
+// Determines the mean error values grouped by individual measurement sessions.
 export const calculateRMSEPerSession = (data) => {
+  // Processing sessions
   const sessions = {};
   data.forEach((d) => {
     const key = d.sessionId;
@@ -197,14 +196,11 @@ export const calculateRMSEPerSession = (data) => {
     .sort((a, b) => (a.date < b.date ? -1 : 1));
 };
 
-
-// -----------------------------------------------------
-// Charting Logic (formerly src/components/Analysis/service.js)
-// -----------------------------------------------------
-
+// Sorts a list of measurements in descending chronological order.
 export const sortMeasurementsDescending = (measurements) => {
+  // Sorting records
   return [...measurements].sort((a, b) => {
-    // Parse timestamp format "DD/MM/YYYY HH:MM"
+    // Parses a localized date string into a numerical timestamp for comparison.
     const parseDate = (dateStr) => {
       try {
         const [datePart, timePart] = dateStr.split(' ');
@@ -224,7 +220,9 @@ export const sortMeasurementsDescending = (measurements) => {
   });
 };
 
+// Prepares statistical data representing the progress of participants for chart rendering.
 export const getProgressChartData = (participants, measurements) => {
+  // Preparing data
   const measurementsByParticipant = {};
   participants.forEach((p) => {
     measurementsByParticipant[p.id] = 0;
@@ -254,6 +252,7 @@ export const getProgressChartData = (participants, measurements) => {
   };
 };
 
+// Formats participant status counts into data suitable for a pie chart display.
 export const getStatusChartData = (participants) => {
   const activeCount = participants.filter((p) => p.status === 'Active').length;
   const completedCount = participants.filter((p) => p.status === 'Completed').length;
@@ -271,6 +270,7 @@ export const getStatusChartData = (participants) => {
   };
 };
 
+// Generates a summary text report based on the provided participant and measurement data.
 export const generateAnalysisText = (participants, measurements) => {
   const activeCount = participants.filter(p => p.status === 'Active').length;
   const completedCount = participants.filter(p => p.status === 'Completed').length;

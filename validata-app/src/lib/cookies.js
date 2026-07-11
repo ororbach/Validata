@@ -1,4 +1,6 @@
-// Client-side cookie helpers
+// This service file contains utility functions for managing client-side cookies.
+
+// This function saves a new cookie in the browser with a defined expiration.
 export function setCookie(name, value, days = 7) {
   if (typeof window === 'undefined') return;
   const date = new Date();
@@ -7,6 +9,7 @@ export function setCookie(name, value, days = 7) {
   document.cookie = name + "=" + (value || "") + expires + "; path=/; SameSite=Lax";
 }
 
+// This function retrieves the value of an existing cookie by its name.
 export function getCookie(name) {
   if (typeof window === 'undefined') return null;
   const nameEQ = name + "=";
@@ -19,6 +22,7 @@ export function getCookie(name) {
   return null;
 }
 
+// This function removes an existing cookie by setting an expired date.
 export function deleteCookie(name) {
   if (typeof window === 'undefined') return;
   document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';

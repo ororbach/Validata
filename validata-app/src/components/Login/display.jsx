@@ -1,6 +1,9 @@
 import React from 'react';
 import { Mail, Lock, LogIn, UserPlus, Sparkles, Database, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react';
 
+// This file defines the display component for the login and registration screen.
+
+// This function renders the view of the login screen and the authentication form.
 export default function LoginDisplay({
   isLogin,
   setIsLogin,
@@ -17,16 +20,16 @@ export default function LoginDisplay({
   setSuccessMessage,
   handleSubmit
 }) {
+  // Login/Register Form UI
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-tr from-slate-950 via-slate-900 to-indigo-950 p-4 relative overflow-hidden font-sans">
       
-      {/* Background glowing decorations */}
       <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-indigo-500/10 blur-[150px]" />
       <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-purple-500/10 blur-[150px]" />
 
       <div className="w-full max-w-md bg-slate-900/60 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-8 shadow-2xl relative z-10">
         
-        {/* Brand Header */}
+        {/* App Logo and Title Section */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center p-3 bg-indigo-500/10 border border-indigo-500/30 rounded-xl mb-3 text-indigo-400">
             <Sparkles className="h-6 w-6 animate-pulse" />
@@ -37,7 +40,7 @@ export default function LoginDisplay({
           <p className="text-slate-400 text-sm mt-1">Clinical Trial Validation Portal</p>
         </div>
 
-        {/* Error / Success Toast Messages inside the card */}
+        {/* Error Message Alert */}
         {errorMessage && (
           <div className="mb-5 p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-start gap-2.5 text-xs text-rose-300">
             <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
@@ -45,6 +48,7 @@ export default function LoginDisplay({
           </div>
         )}
 
+        {/* Success Message Alert */}
         {successMessage && (
           <div className="mb-5 p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-start gap-2.5 text-xs text-emerald-300">
             <Sparkles className="h-4 w-4 shrink-0 mt-0.5" />
@@ -52,7 +56,7 @@ export default function LoginDisplay({
           </div>
         )}
 
-        {/* Form Tabs */}
+        {/* Toggle between Sign In and Register */}
         <div className="flex bg-slate-950/80 p-1 rounded-lg border border-slate-800/60 mb-6">
           <button
             type="button"
@@ -82,8 +86,9 @@ export default function LoginDisplay({
           </button>
         </div>
 
-        {/* Main Form */}
+        {/* Authentication Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Email Input Field */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-300">Email Address</label>
             <div className="relative">
@@ -101,6 +106,7 @@ export default function LoginDisplay({
             </div>
           </div>
 
+          {/* Password Input Field */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-slate-300">Password</label>
             <div className="relative">
@@ -125,6 +131,7 @@ export default function LoginDisplay({
             </div>
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={isLoading}

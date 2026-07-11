@@ -1,16 +1,12 @@
-// Service file for ParticipantsView component
-// Handles calculations and formatting for participant data
+// This service provides utility functions to process and aggregate participant data for viewing.
 
-/**
- * Calculates statistics for the participants list.
- * @param {Array} participants 
- * @returns {Object} stats containing average age, healthy count, ankle injured count, etc.
- */
+// Computes aggregate demographic and health statistics from the provided participant list.
 export const getParticipantStats = (participants) => {
   if (!participants || participants.length === 0) {
     return { avgAge: 0, healthyCount: 0, ankleInjuredCount: 0, totalCount: 0 };
   }
 
+  // Filter valid ages
   const validAges = participants
     .map(p => Number(p.age))
     .filter(age => !isNaN(age) && age > 0);

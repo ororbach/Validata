@@ -1,3 +1,4 @@
+// This component renders the results data table and export functionalities.
 import { useState, useMemo } from 'react';
 import { FileSpreadsheet, CheckCircle, X, ArrowDownUp, ArrowDown, HelpCircle } from 'lucide-react';
 import * as XLSX from 'xlsx';
@@ -5,6 +6,7 @@ import { formatDateForDisplay } from './service';
 
 const RESULTS_EXPORT_HEADERS = ['Enrollment Date', 'Test Date', 'Participant', 'Goniometer', 'AI/ML Model', 'Notes'];
 
+// Converts a date object or string into a formatted date string.
 const toDateStr = (value) => {
   if (!value) return '';
   const d = new Date(value);
@@ -12,6 +14,7 @@ const toDateStr = (value) => {
   return d.toISOString().slice(0, 10);
 };
 
+// Displays the measurements table, filtering options, and data export tools.
 const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -25,18 +28,24 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
       .filter((p) => String(p.status || '').toLowerCase() === 'dropped')
       .map((p) => p.id)
   );
+
+  // Checks if a measurement is valid and its participant is active.
   const isMeasurementValid = (m) => m.isValid !== false && !droppedParticipantIds.has(m.participant);
 
+  // Memoizes the list of unique participant IDs from the measurements.
   const uniqueParticipants = useMemo(() => {
     const names = sortedMeasurements.map((m) => m.participant).filter(Boolean);
     return [...new Set(names)].sort();
   }, [sortedMeasurements]);
 
+  // Handles the click event on a sortable column header.
   const handleSortClick = (col) => {
     setSortColumn((prev) => (prev === col ? null : col));
   };
 
+  // Memoizes the filtered and sorted list of measurements to display.
   const displayMeasurements = useMemo(() => {
+    // Filter results
     let result = sortedMeasurements.filter((m) => {
       if (filterParticipant && m.participant !== filterParticipant) return false;
       const enrollStr = toDateStr(m.enrollmentDate || m.enrollment_date);
@@ -70,23 +79,28 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
   }, [sortedMeasurements, filterParticipant, filterEnrollDate, filterTestDate, sortColumn]);
 
   const hasActiveFilters = filterParticipant || filterEnrollDate || filterTestDate;
+
+  // Clears all currently active filters.
   const clearFilters = () => {
     setFilterParticipant('');
     setFilterEnrollDate('');
     setFilterTestDate('');
   };
 
+  // Returns the appropriate sorting icon based on the column state.
   const SortIcon = ({ col }) => {
     if (sortColumn !== col) return <ArrowDownUp className="w-3.5 h-3.5 opacity-40" />;
     if (col === 'participant') return <ArrowDown className="w-3.5 h-3.5 text-indigo-500" />;
     return <ArrowDown className="w-3.5 h-3.5 text-indigo-500" />;
   };
 
+  // Exports the results data to an Excel file.
   const handleExportToExcel = () => {
     setIsExporting(true);
     setShowToast(true);
 
     try {
+      // Generate file
       const worksheetData = sortedMeasurements
         .filter(isMeasurementValid)
         .map(m => ({
@@ -110,6 +124,7 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
     }
   };
 
+  // Handles marking a measurement as invalid upon user confirmation.
   const handleMarkInvalidClick = (id) => {
     if (window.confirm('Mark this measurement invalid? This cannot be undone and it will be excluded from all statistics.')) {
       onMarkInvalid(id);
@@ -118,12 +133,14 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
 
   return (
     <section className="app-section">
+      {/* Toast Notification */}
       {showToast && (
         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 z-50 flex items-center bg-[#10b981] text-white px-6 py-3 rounded shadow-lg transition-all duration-300">
           <span className="font-medium text-sm">Preparing Excel report... Download will begin shortly.</span>
         </div>
       )}
 
+      {/* Header and Actions */}
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Results</h2>
@@ -142,12 +159,13 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
         </button>
       </div>
 
+      {/* Main Content Area */}
       <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800" id="results-pdf-container">
         <h3 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">
           Research Data View
         </h3>
 
-        {/* Filters */}
+        {/* Filters Section */}
         <div className="flex flex-wrap gap-3 mb-4 items-end">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-medium text-slate-500 dark:text-slate-400">Participant</label>
@@ -193,7 +211,7 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
           )}
         </div>
 
-        {/* Mobile cards */}
+        {/* Mobile View Cards */}
         <div className="md:hidden space-y-3">
           {displayMeasurements.length === 0 ? (
             <p className="text-center py-6 text-slate-500 dark:text-slate-400">No data to display</p>
@@ -238,6 +256,7 @@ const ResultsDisplay = ({ sortedMeasurements, participants = [], onMarkInvalid }
           )}
         </div>
 
+        {/* Desktop View Table */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

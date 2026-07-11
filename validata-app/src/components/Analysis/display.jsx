@@ -18,7 +18,8 @@ import ErrorHistogram from './charts/ErrorHistogram';
 import PerformanceTrend from './charts/PerformanceTrend';
 import ThresholdDonut from './charts/ThresholdDonut';
 
-// Register Chart.js components
+// This file defines the display component for the analysis report and statistical charts.
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const INFO_SCATTER =
@@ -33,13 +34,14 @@ const INFO_HISTOGRAM =
 const INFO_TREND =
   'RMSE and MAE per participant. Each point uses that participant\'s average AI and goniometer readings. RMSE (Root Mean Square Error) penalises large errors more heavily. MAE (Mean Absolute Error) treats all errors equally. Both are in degrees — lower is better.';
 
+// This function returns the description text for the donut chart based on the threshold.
 const infoDonut = (threshold) =>
   `Percentage of measurements where the AI error was within the acceptable clinical threshold of ±${threshold}°. Green = pass, red = fail.`;
 
 const INFO_DESCRIPTIVE =
   'Descriptive statistics of the AI − goniometer error across participants, after averaging each participant\'s own measurements. Mean shows the average error (bias); SD shows how spread out errors are between participants; SE shows how precisely the mean error is estimated from this sample size.';
 
-// Pure presentational component
+// This function renders the statistical display UI and all charts.
 const AnalysisDisplay = React.memo(({
   progressData,
   progressOptions,
@@ -60,9 +62,12 @@ const AnalysisDisplay = React.memo(({
   const { n: descN, mean: descMean, sd: descSd, se: descSe } = descriptiveStats || { n: 0, mean: 0, sd: 0, se: 0 };
   const isEmpty = !isLoadingCharts && statsData.length === 0;
 
+  // Formats the last updated time
   const formattedTime = lastUpdated
     ? lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     : null;
+
+  // Handle state and effects
 
   const [isGenerating, setIsGenerating] = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -72,7 +77,9 @@ const AnalysisDisplay = React.memo(({
     setThresholdInput(String(threshold));
   }, [threshold]);
 
+  // This function generates a PDF document from the charts displayed on the page.
   const handleGenerateReport = async () => {
+    // Generate file
     setIsGenerating(true);
     setShowToast(true);
     
@@ -125,11 +132,14 @@ const AnalysisDisplay = React.memo(({
 
   return (
     <section className="app-section">
+      {/* Analysis Content Section */}
+      {/* Toast Notification */}
       {showToast && (
         <div className="fixed top-10 left-1/2 transform -translate-x-1/2 z-50 flex items-center bg-[#10b981] text-white px-6 py-3 rounded shadow-lg transition-all duration-300">
           <span className="font-medium text-sm">Preparing PDF report... Download will begin shortly.</span>
         </div>
       )}
+      {/* Header Section */}
       <div className="flex justify-between items-end mb-8">
         <header>
           <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Results View & Analysis</h2>
@@ -147,17 +157,16 @@ const AnalysisDisplay = React.memo(({
         </button>
       </div>
 
+      {/* PDF Container */}
       <div id="analysis-pdf-container">
-      {/* Charts Section */}
+      {/* Top Charts: Progress and Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Chart 1: Measurement Completion */}
         <div className="pdf-chart bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">Measurement Progress</h3>
           <div className="relative h-64">
             <Bar data={progressData} options={progressOptions} />
           </div>
         </div>
-        {/* Chart 2: Participant Status */}
         <div className="pdf-chart bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
             Participant Status Distribution
@@ -168,7 +177,7 @@ const AnalysisDisplay = React.memo(({
         </div>
       </div>
 
-      {/* ── Clinical Accuracy Analysis header ── */}
+      {/* Analysis Header */}
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Clinical Accuracy Analysis</h3>
@@ -182,7 +191,6 @@ const AnalysisDisplay = React.memo(({
         </div>
         <div className="flex items-center gap-3 mt-1 shrink-0">
 
-          {/* Last-updated timestamp — Visibility of System Status (Nielsen heuristic #1) */}
           {formattedTime && (
             <span className="text-xs text-slate-400 dark:text-slate-400">Last updated: {formattedTime}</span>
           )}
@@ -204,10 +212,10 @@ const AnalysisDisplay = React.memo(({
         </div>
       )}
 
-      {/* ── Summary cards + charts — rendered only when data is ready ── */}
+      {/* Analysis Content */}
       {!isLoadingCharts && statsData.length > 0 && (
         <>
-          {/* Summary Stats Cards — sticky above charts so numbers stay in view */}
+          {/* Summary Stats Cards (RMSE, MAE, Mean Bias) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="bg-white dark:bg-slate-900 p-5 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
               <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">RMSE</p>
@@ -228,7 +236,7 @@ const AnalysisDisplay = React.memo(({
             </div>
           </div>
 
-          {/* Accuracy Charts — 2-column grid, 1 column on mobile */}
+          {/* Main Charts Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
             <ChartCard
               title="Agreement Scatter"
@@ -263,7 +271,7 @@ const AnalysisDisplay = React.memo(({
             </ChartCard>
           </div>
 
-          {/* Threshold Donut — full row, centered */}
+          {/* Pass / Fail Rate Threshold Chart */}
           <ChartCard
             title={
               <div className="flex items-center justify-center gap-2">
@@ -304,9 +312,9 @@ const AnalysisDisplay = React.memo(({
             <div className="max-w-sm mx-auto">
               <ThresholdDonut data={charts?.thresholdDonut} threshold={threshold} />
             </div>
-          </ChartCard>
+            </ChartCard>
 
-          {/* Descriptive Statistics — mean/SD/SE of the AI-goniometer error across participants */}
+          {/* Descriptive Statistics Card */}
           <ChartCard title="Descriptive Statistics" info={INFO_DESCRIPTIVE} isEmpty={descN === 0}>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="text-center">

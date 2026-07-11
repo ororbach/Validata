@@ -1,3 +1,6 @@
+// This service handles API calls related to user management.
+
+// Fetches the list of all users from the server.
 export const fetchUsersAPI = async () => {
   const res = await fetch('/api/profiles');
   if (!res.ok) {
@@ -7,6 +10,7 @@ export const fetchUsersAPI = async () => {
   return res.json();
 };
 
+// Updates the role of a user on the server.
 export const updateRoleAPI = async (userId, newRole) => {
   const res = await fetch('/api/profiles', {
     method: 'PATCH',
@@ -21,6 +25,7 @@ export const updateRoleAPI = async (userId, newRole) => {
   return res.json();
 };
 
+// Updates the status of a user on the server.
 export const updateStatusAPI = async (userId, newStatus) => {
   const res = await fetch('/api/profiles', {
     method: 'PATCH',
@@ -35,6 +40,7 @@ export const updateStatusAPI = async (userId, newStatus) => {
   return res.json();
 };
 
+// Deletes a user profile from the server.
 export const deleteUserAPI = async (userId) => {
   const res = await fetch(`/api/profiles?id=${userId}`, {
     method: 'DELETE'

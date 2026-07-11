@@ -1,9 +1,11 @@
 "use client";
 
+// This context component is used to manage and apply the application's theme.
 import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext({ theme: 'light', toggleTheme: () => {} });
 
+// This function defines the theme provider and wraps its children with the updated values.
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState('light');
 
@@ -17,6 +19,7 @@ export function ThemeProvider({ children }) {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
+  // This function switches the theme between light and dark modes.
   const toggleTheme = () => setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
 
   return (
@@ -26,6 +29,7 @@ export function ThemeProvider({ children }) {
   );
 }
 
+// This custom hook provides easy access to the theme context from any component.
 export function useTheme() {
   return useContext(ThemeContext);
 }

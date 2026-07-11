@@ -1,6 +1,8 @@
+// This component displays the user interface for data collection and file uploads.
 import { UploadCloud, CheckCircle, Download } from 'lucide-react';
 import * as XLSX from 'xlsx';
 
+// Downloads an Excel template file for importing data.
 const handleDownloadTemplate = () => {
   const worksheet = XLSX.utils.aoa_to_sheet([['participant_id', 'goniometer', 'ai_model', 'test_date', 'notes']]);
   const workbook = XLSX.utils.book_new();
@@ -8,7 +10,7 @@ const handleDownloadTemplate = () => {
   XLSX.writeFile(workbook, 'validata-import-template.xlsx');
 };
 
-// Pure presentational component
+// Renders the data collection form and the file upload dropzone.
 const DataCollectionDisplay = ({ 
   activeParticipants, 
   participantId, 
@@ -33,8 +35,10 @@ const DataCollectionDisplay = ({
   importSummary,
   onClearImportSummary
 }) => {
+  // Main Data Collection UI
   return (
     <section className="app-section">
+      {/* Section Header */}
       <header className="mb-8">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Data Collection & Management</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -42,13 +46,15 @@ const DataCollectionDisplay = ({
         </p>
       </header>
 
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Measurement Log */}
+        {/* Manual Measurement Log Form */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <h3 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">
             Measurement Log
           </h3>
           <form onSubmit={onSubmitLog} className="space-y-4">
+            {/* Participant Selection */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Participant (Active Only)
@@ -70,7 +76,9 @@ const DataCollectionDisplay = ({
               </select>
             </div>
 
+            {/* Measurement Inputs Grid */}
             <div className="grid grid-cols-2 gap-3">
+              {/* Goniometer Input */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Goniometer
@@ -83,6 +91,7 @@ const DataCollectionDisplay = ({
                   className="w-full border border-slate-300 dark:border-slate-700 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
                 />
               </div>
+              {/* AI/ML Model Input */}
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   AI/ML Model
@@ -97,6 +106,7 @@ const DataCollectionDisplay = ({
               </div>
             </div>
 
+            {/* Test Date Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Test Date
@@ -109,6 +119,7 @@ const DataCollectionDisplay = ({
               />
             </div>
 
+            {/* Researcher Notes Textarea */}
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Researcher Notes
@@ -120,6 +131,7 @@ const DataCollectionDisplay = ({
                 className="w-full border border-slate-300 dark:border-slate-700 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100"
               ></textarea>
             </div>
+            {/* Submit Button */}
             <button
               type="submit"
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2.5 rounded-lg transition-colors cursor-pointer"
@@ -129,8 +141,9 @@ const DataCollectionDisplay = ({
           </form>
         </div>
 
-        {/* File Upload / Import */}
+        {/* Bulk Import Section */}
         <div className="bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col">
+          {/* Bulk Import Header & Template Download */}
           <div className="flex items-center justify-between gap-3 mb-4 border-b border-slate-200 dark:border-slate-800 pb-2">
             <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100">
               Bulk Import (CSV, JSON, Excel)
@@ -145,12 +158,14 @@ const DataCollectionDisplay = ({
           </div>
 
           {isImporting ? (
+            // Importing Loading State
             <div className="flex-1 flex flex-col justify-center items-center p-6 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg">
               <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-3"></div>
               <p className="text-slate-600 dark:text-slate-300 font-medium">Processing and importing file...</p>
               <p className="text-xs text-slate-400 dark:text-slate-400 mt-1">Please do not refresh the page.</p>
             </div>
           ) : importSummary ? (
+            // Import Summary Results State
             <div className="flex-1 flex flex-col justify-between">
               <div className="space-y-4">
                 <div className={`p-4 rounded-xl border ${importSummary.errorCount === 0 ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900 text-emerald-800 dark:text-emerald-300' : 'bg-amber-50 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-300'}`}>
@@ -165,6 +180,7 @@ const DataCollectionDisplay = ({
                 </div>
 
                 {importSummary.errors && importSummary.errors.length > 0 && (
+                  // Import Errors/Warnings List
                   <div className="max-h-48 overflow-y-auto p-3.5 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-lg text-xs text-rose-700 dark:text-rose-300 font-mono space-y-1">
                     <div className="font-semibold mb-1 text-rose-800 dark:text-rose-300">Errors & Warnings:</div>
                     {importSummary.errors.map((err, i) => (
@@ -174,6 +190,7 @@ const DataCollectionDisplay = ({
                 )}
               </div>
 
+              {/* Reset Import Button */}
               <button
                 onClick={onClearImportSummary}
                 className="mt-4 w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium py-2.5 rounded-lg transition-colors border border-slate-200 dark:border-slate-700 cursor-pointer"
@@ -182,7 +199,9 @@ const DataCollectionDisplay = ({
               </button>
             </div>
           ) : (
+            // File Upload Dropzone State
             <div className="flex-grow flex flex-col justify-between">
+              {/* Drag and Drop Area */}
               <div
                 className={`flex-1 flex flex-col justify-center items-center border-2 border-dashed rounded-lg transition-colors cursor-pointer p-6 min-h-[160px] ${
                   isDragging
@@ -208,6 +227,7 @@ const DataCollectionDisplay = ({
                 />
               </div>
 
+              {/* Expected Format Instructions */}
               <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs text-slate-500 dark:text-slate-400">
                 <p className="font-semibold text-slate-600 dark:text-slate-300 mb-1.5">Expected Spreadsheet Headers:</p>
                 <code className="block bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-2 rounded text-indigo-600 dark:text-indigo-400 font-mono break-all leading-normal">

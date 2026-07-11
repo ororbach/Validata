@@ -6,6 +6,7 @@ import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisT
 import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
+// This component renders a custom tooltip for the error histogram bars.
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -16,7 +17,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// Histogram of AI − goniometer errors; a narrow peak around 0 = consistently accurate AI
+// This component displays a histogram of error distribution between AI and goniometer measurements.
 const ErrorHistogram = ({ data }) => {
   const { theme } = useTheme();
   if (!data || !data.bins?.length) return null;
@@ -40,4 +41,3 @@ const ErrorHistogram = ({ data }) => {
 };
 
 export default ErrorHistogram;
-

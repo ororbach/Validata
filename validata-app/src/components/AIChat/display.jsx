@@ -16,8 +16,11 @@ import {
   Cell
 } from 'recharts';
 
+// This file defines the AI Chat display component, including charts and messages.
+
 const COLORS = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6'];
 
+// This function renders the chat UI, including messages and charts.
 export default function AIChatDisplay({
   isOpen,
   setIsOpen,
@@ -30,11 +33,15 @@ export default function AIChatDisplay({
   error,
   messagesEndRef
 }) {
+  // This function processes and displays custom charts based on tool data.
   const renderToolCall = (toolCall) => {
+    // Process chart
     if (toolCall.toolName === 'generateGraph') {
       const { chartType, title, data, dataKeys, xAxisKey } = toolCall.args;
       
+      // This function returns the appropriate chart component based on the requested chart type.
       const renderChart = () => {
+        // Return bar chart
         if (chartType === 'bar') {
           return (
             <BarChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
@@ -49,6 +56,7 @@ export default function AIChatDisplay({
             </BarChart>
           );
         }
+        // Return line chart
         if (chartType === 'line') {
           return (
             <LineChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 20 }}>
@@ -63,6 +71,7 @@ export default function AIChatDisplay({
             </LineChart>
           );
         }
+        // Return pie chart
         if (chartType === 'pie') {
           return (
             <PieChart>
@@ -90,6 +99,7 @@ export default function AIChatDisplay({
 
       return (
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-4 mt-2 w-full max-w-full overflow-hidden">
+          {/* Tool Chart Container */}
           <div className="flex items-center gap-2 mb-4 text-indigo-600 dark:text-indigo-400 border-b border-slate-100 dark:border-slate-800 pb-2">
             <BarChart2 className="w-5 h-5" />
             <h4 className="font-semibold text-sm truncate">{title}</h4>
@@ -107,6 +117,7 @@ export default function AIChatDisplay({
 
   return (
     <>
+      {/* Chat Toggle Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="absolute bottom-20 right-4 md:bottom-8 md:right-8 z-50 w-14 h-14 bg-gradient-to-tr from-purple-600 to-indigo-600 rounded-full flex items-center justify-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-purple-500/30 group"
@@ -118,9 +129,10 @@ export default function AIChatDisplay({
         </div>
       </button>
 
+      {/* Chat Window Container */}
       {isOpen && (
         <div className="fixed inset-0 md:absolute md:inset-auto md:bottom-24 md:right-8 md:left-8 w-auto h-[100dvh] md:h-[600px] max-h-[100dvh] md:max-h-[80vh] bg-white dark:bg-slate-900 rounded-none md:rounded-2xl shadow-2xl border-0 md:border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden z-50 animate-in fade-in slide-in-from-bottom-10 duration-300">
-          {/* Header */}
+          {/* Chat Header */}
           <div className="bg-gradient-to-r from-purple-600 to-indigo-600 p-4 text-white flex justify-between items-center shadow-md">
             <div className="flex items-center gap-3">
               <div className="bg-white/20 p-2 rounded-full backdrop-blur-sm">
@@ -140,13 +152,15 @@ export default function AIChatDisplay({
             </button>
           </div>
 
-          {/* Messages */}
+          {/* Chat Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50 dark:bg-slate-800/50">
+            {/* Display error message */}
             {error && (
               <div className="bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 p-4 rounded-xl border border-red-200 dark:border-red-900 text-sm mb-4">
                 <strong>Error:</strong> {error.message || 'Something went wrong while connecting to AI.'}
               </div>
             )}
+            {/* Display empty state */}
             {messages.length === 0 && !error && (
               <div className="flex flex-col items-center justify-center h-full text-center space-y-4 text-slate-500 dark:text-slate-400">
                 <div className="bg-indigo-100 dark:bg-indigo-900/40 p-4 rounded-full text-indigo-500 dark:text-indigo-400 mb-2">
@@ -159,6 +173,7 @@ export default function AIChatDisplay({
               </div>
             )}
             
+            {/* Render messages loop */}
             {messages.map((m) => (
               <div key={m.id} className={`flex gap-3 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {m.role !== 'user' && (
@@ -201,6 +216,7 @@ export default function AIChatDisplay({
                 )}
               </div>
             ))}
+            {/* Display typing indicator */}
             {isLoading && messages[messages.length - 1]?.role === 'user' && (
                <div className="flex gap-3 justify-start">
                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center flex-shrink-0 text-white shadow-sm mt-1">
@@ -216,7 +232,7 @@ export default function AIChatDisplay({
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input */}
+          {/* Chat Input Form */}
           <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800">
             <form
               onSubmit={(e) => {

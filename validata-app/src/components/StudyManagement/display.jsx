@@ -1,5 +1,6 @@
 import { FlaskConical, Plus, Trash2, CheckCircle2, HelpCircle } from 'lucide-react';
 
+// This component displays the user interface for managing studies.
 const StudyManagementDisplay = ({
   studies,
   currentStudyId,
@@ -12,6 +13,7 @@ const StudyManagementDisplay = ({
 }) => {
   return (
     <section className="app-section">
+      {/* Header Section */}
       <header className="mb-8">
         <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-100">Studies Management</h2>
         <p className="text-slate-500 dark:text-slate-400 mt-1">
@@ -19,8 +21,9 @@ const StudyManagementDisplay = ({
         </p>
       </header>
 
+      {/* Main Grid Container */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Create Study Form */}
+        {/* Create Study Form Panel */}
         <div className="lg:col-span-1 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 h-fit">
           <h3 className="text-xl font-semibold mb-4 text-slate-800 dark:text-slate-100 border-b border-slate-200 dark:border-slate-800 pb-2">
             Create New Study
@@ -61,7 +64,7 @@ const StudyManagementDisplay = ({
           </form>
         </div>
 
-        {/* Studies List */}
+        {/* Studies List Panel */}
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
           <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2 mb-4">
             <h3 className="text-xl font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">

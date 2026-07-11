@@ -6,6 +6,7 @@ import { COLORS, CHART_MARGIN, CHART_HEIGHT, getGridColor, getAxisTick, getAxisT
 import { useTheme } from '@/context/ThemeContext';
 import YLabelChart from './YLabelChart';
 
+// This component renders a custom tooltip for the performance trend lines.
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -20,7 +21,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
-// RMSE and MAE per session over time — requires at least 2 sessions to show a trend
+// This component displays a line chart showing performance trends across different measurement sessions.
 const PerformanceTrend = ({ data }) => {
   const { theme } = useTheme();
   if (!data || !data.sessions) return null;
@@ -65,4 +66,3 @@ const PerformanceTrend = ({ data }) => {
 };
 
 export default PerformanceTrend;
-
